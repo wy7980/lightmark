@@ -1,10 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { EditorView, basicSetup, keymap } from '@codemirror/view'
+  import { EditorView, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection } from '@codemirror/view'
   import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
   import { oneDark } from '@codemirror/theme-one-dark'
   import { EditorState } from '@codemirror/state'
   import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
+  import { indentOnInput } from '@codemirror/language'
   
   export let content = ''
   
@@ -32,11 +33,18 @@
       state: EditorState.create({
         doc: content,
         extensions: [
-          basicSetup,
+          lineNumbers(),
+          highlightActiveLineGutter(),
+          highlightSpecialChars(),
+          drawSelection(),
+          dropCursor(),
+          rectangularSelection(),
+          indentOnInput(),
           markdown({ base: markdownLanguage }),
           oneDark,
           history(),
-          keymap.of([...defaultKeymap, ...historyKeymap]),
+          defaultKeymap,
+          historyKeymap,
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
               handleChange(update.state.doc.toString())
