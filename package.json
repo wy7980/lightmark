@@ -18,6 +18,7 @@
     "@tauri-apps/api": "^2.0.0"
   },
   "devDependencies": {
+    "@sveltejs/preprocess": "^3.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.1.0",
     "@tauri-apps/cli": "^2.0.0",
     "svelte": "^4.2.12",
