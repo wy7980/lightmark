@@ -15,4 +15,10 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG,
     outDir: 'dist',
   },
+  // Fix ESM-only plugin resolution issue
+  optimizeDeps: {
+    esbuildOptions: {
+      format: 'esm'
+    }
+  }
 })
