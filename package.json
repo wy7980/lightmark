@@ -1,0 +1,29 @@
+{
+  "name": "lightmark",
+  "version": "0.1.0",
+  "description": "高性能 Markdown 编辑器 - Notepad++ 的启动速度 + Typora 的即时渲染",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && tauri build",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@codemirror/lang-markdown": "^6.2.5",
+    "@codemirror/language": "^6.10.1",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/theme-one-dark": "^6.1.2",
+    "@codemirror/view": "^6.26.3",
+    "@lezer/highlight": "^1.2.0",
+    "@tauri-apps/api": "^2.0.0"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^3.1.0",
+    "@tauri-apps/cli": "^2.0.0",
+    "svelte": "^4.2.12",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  },
+  "keywords": ["markdown", "editor", "tauri", "rust"],
+  "author": "OpenClaw",
+  "license": "MIT"
+}

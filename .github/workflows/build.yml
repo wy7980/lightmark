@@ -1,0 +1,130 @@
+# LightMark 跨平台构建工作流
+# 支持 Windows、macOS、Linux 三平台自动构建和发布
+
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 推送版本标签时触发，如 v0.1.0
+  workflow_dispatch:  # 支持手动触发
+
+# 取消同一分支的旧运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ========== 构建任务 ==========
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # macOS Intel
+          - platform: 'macos-latest'
+            target: 'x86_64-apple-darwin'
+            args: '--target x86_64-apple-darwin'
+          # macOS Apple Silicon
+          - platform: 'macos-latest'
+            target: 'aarch64-apple-darwin'
+            args: '--target aarch64-apple-darwin'
+          # Linux
+          - platform: 'ubuntu-22.04'
+            target: ''
+            args: ''
+          # Windows
+          - platform: 'windows-latest'
+            target: ''
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 🦀 Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+
+      - name: 📦 Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri'
+
+      - name: 🐧 Install system dependencies (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            pkg-config \
+            build-essential
+
+      - name: 📦 Install Windows dependencies
+        if: matrix.platform == 'windows-latest'
+        run: |
+          # WebView2 已预装，无需额外操作
+          echo "WebView2 is pre-installed on Windows runners"
+
+      - name: 🟢 Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+
+      - name: 📦 Install frontend dependencies
+        run: npm ci
+
+      - name: 🔨 Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: ${{ matrix.args }}
+
+      - name: 📤 Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lightmark-${{ matrix.platform }}${{ matrix.target && '-' || '' }}${{ matrix.target }}
+          path: |
+            src-tauri/target/release/bundle/**/*
+            src-tauri/target/${{ matrix.target }}/release/bundle/**/*
+          retention-days: 30
+
+  # ========== 发布任务 ==========
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: 📥 Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: 📦 Prepare release files
+        run: |
+          # 整理所有构建产物到 release 目录
+          mkdir -p release
+          find artifacts -type f \( -name "*.exe" -o -name "*.msi" -o -name "*.dmg" -o -name "*.deb" -o -name "*.AppImage" -o -name "*.app.tar.gz" \) -exec mv {} release/ \;
+          ls -la release/
+
+      - name: 🚀 Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/**
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, 'beta') || contains(github.ref, 'alpha') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
