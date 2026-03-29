@@ -117,9 +117,10 @@ fn get_recent_files() -> Result<Vec<String>, String> {
 
 // 自动保存设置
 #[tauri::command]
-async fn set_auto_save(state: State<'_, AppState>, enabled: bool) {
+async fn set_auto_save(state: State<'_, AppState>, enabled: bool) -> Result<(), String> {
     let mut auto_save = state.auto_save.lock().await;
     *auto_save = enabled;
+    Ok(())
 }
 
 fn main() {
