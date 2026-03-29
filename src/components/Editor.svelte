@@ -1,12 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { EditorView, basicSetup, keymap } from 'codemirror'
+  import { EditorView, basicSetup, keymap } from '@codemirror/view'
   import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
   import { oneDark } from '@codemirror/theme-one-dark'
   import { EditorState } from '@codemirror/state'
   import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
   
-  export let content = $bindable('')
+  export let content = ''
   
   let container: HTMLDivElement
   let view: EditorView | null = null
@@ -24,8 +24,8 @@
   
   onMount(() => {
     const handleChange = createDispatch((newContent: string) => {
-      content = newContent
-      dispatchEvent(new CustomEvent('change', { detail: newContent }))
+      const event = new CustomEvent('change', { detail: newContent })
+      container.dispatchEvent(event)
     })
     
     view = new EditorView({
@@ -69,24 +69,9 @@
       }
     }
   })
-  
-  // 外部更新内容时同步到编辑器
-  $: if (view && content !== view.state.doc.toString()) {
-    const currentCursor = view.state.selection.main.head
-    view.dispatch({
-      changes: {
-        from: 0,
-        to: view.state.doc.length,
-        insert: content,
-      },
-      selection: { anchor: Math.min(currentCursor, content.length) },
-    })
-  }
 </script>
 
-<template>
-  <div class="editor-wrapper" bind:this={container}></div>
-</template>
+<div class="editor-wrapper" bind:this={container}></div>
 
 <style>
   .editor-wrapper {

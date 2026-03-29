@@ -4,13 +4,13 @@
   import Sidebar from './components/Sidebar.svelte'
   import { invoke } from '@tauri-apps/api/core'
   
-  let filePath = $state<string | null>(null)
-  let content = $state('')
-  let previewHtml = $state('')
-  let wordCount = $state(0)
-  let charCount = $state(0)
-  let autoSave = $state(true)
-  let sidebarOpen = $state(true)
+  let filePath: string | null = null
+  let content = ''
+  let previewHtml = ''
+  let wordCount = 0
+  let charCount = 0
+  let autoSave = true
+  let sidebarOpen = true
   
   // 防抖解析
   let parseTimeout: number
@@ -102,8 +102,8 @@
     
     <div class="main-content">
       <Sidebar 
-        bind:open={sidebarOpen}
-        bind:filePath
+        open={sidebarOpen}
+        filePath={filePath}
         on:fileSelect={(e) => {
           filePath = e.detail.path
           // TODO: 加载文件
@@ -112,7 +112,7 @@
       
       <div class="editor-container">
         <Editor 
-          bind:content
+          content={content}
           on:change={(e) => handleContentChange(e.detail)}
         />
         

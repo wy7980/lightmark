@@ -1,12 +1,14 @@
 <script lang="ts">
-  export let open = $bindable(true)
-  export let filePath = $bindable<string | null>(null)
+  import { createEventDispatcher } from 'svelte'
+  
+  export let open = true
+  export let filePath: string | null = null
   
   const dispatch = createEventDispatcher<{
     fileSelect: { path: string }
   }>()
   
-  let recentFiles = $state<string[]>([])
+  let recentFiles: string[] = []
   
   async function loadRecentFiles() {
     // TODO: 从 Tauri 后端加载
@@ -18,34 +20,32 @@
   }
 </script>
 
-<template>
-  {#if open}
-    <div class="sidebar">
-      <div class="sidebar-section">
-        <h3>最近文件</h3>
-        {#if recentFiles.length > 0}
-          <ul class="file-list">
-            {#each recentFiles as file}
-              <li 
-                class="file-item {filePath === file ? 'active' : ''}"
-                on:click={() => dispatch('fileSelect', { detail: { path: file } })}
-              >
-                📄 {file}
-              </li>
-            {/each}
-          </ul>
-        {:else}
-          <p class="empty">暂无最近文件</p>
-        {/if}
-      </div>
-      
-      <div class="sidebar-section">
-        <h3>文件夹</h3>
-        <p class="empty">TODO: 文件树</p>
-      </div>
+{#if open}
+  <div class="sidebar">
+    <div class="sidebar-section">
+      <h3>最近文件</h3>
+      {#if recentFiles.length > 0}
+        <ul class="file-list">
+          {#each recentFiles as file}
+            <li 
+              class="file-item {filePath === file ? 'active' : ''}"
+              on:click={() => dispatch('fileSelect', { detail: { path: file } })}
+            >
+              📄 {file}
+            </li>
+          {/each}
+        </ul>
+      {:else}
+        <p class="empty">暂无最近文件</p>
+      {/if}
     </div>
-  {/if}
-</template>
+    
+    <div class="sidebar-section">
+      <h3>文件夹</h3>
+      <p class="empty">TODO: 文件树</p>
+    </div>
+  </div>
+{/if}
 
 <style>
   .sidebar {
