@@ -23,6 +23,6 @@ npm-debug.log*
 .env
 .env.local
 
-# Tauri
-src-tauri/icons/icon.icns
-src-tauri/icons/icon.ico
+# Tauri icons (keep these)
+!src-tauri/icons/*.icns
+!src-tauri/icons/*.ico
