@@ -1,12 +1,16 @@
 import { defineConfig } from 'vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
 
+// @see https://vitejs.dev/config/
 export default defineConfig({
   plugins: [svelte()],
   clearScreen: false,
   server: {
     port: 1420,
     strictPort: true,
+    watch: {
+      ignored: ['**/src-tauri/**'],
+    },
   },
   envPrefix: ['VITE_', 'TAURI_'],
   build: {
@@ -15,10 +19,4 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG,
     outDir: 'dist',
   },
-  // Fix ESM-only plugin resolution issue
-  optimizeDeps: {
-    esbuildOptions: {
-      format: 'esm'
-    }
-  }
 })
