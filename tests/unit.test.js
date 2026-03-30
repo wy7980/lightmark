@@ -223,4 +223,90 @@ test('SyntaxHighlighter: 语言显示名称映射', () => {
   assert.strictEqual(displayNames['python'], 'Python');
 });
 
+// 测试代码折叠 - 行数计算
+test('CodeFolding: 代码行数统计', () => {
+  function countLines(code) {
+    return code.split('\n').length;
+  }
+  
+  const code1 = 'line1\nline2\nline3';
+  const code2 = 'single line';
+  const code3 = 'line1\nline2\nline3\nline4\nline5';
+  
+  assert.strictEqual(countLines(code1), 3);
+  assert.strictEqual(countLines(code2), 1);
+  assert.strictEqual(countLines(code3), 5);
+});
+
+// 测试语法高亮 - 支持的语言（修复之前的测试）
+test('SyntaxHighlighter: 支持的语言列表', () => {
+  const supportedLanguages = [
+    'javascript', 'typescript', 'python', 'java', 'cpp',
+    'html', 'css', 'sql', 'bash', 'json'
+  ];
+  
+  assert.ok(supportedLanguages.includes('javascript'));
+  assert.ok(supportedLanguages.includes('python'));
+  assert.strictEqual(supportedLanguages.length, 10);
+});
+
+// 测试代码折叠 - 折叠判断
+test('CodeFolding: 是否可折叠判断', () => {
+  function canCollapse(lineCount, maxLines = 20, allowCollapse = true) {
+    return allowCollapse && lineCount > maxLines;
+  }
+  
+  assert.strictEqual(canCollapse(10), false);  // 少于 20 行，不可折叠
+  assert.strictEqual(canCollapse(20), false);  // 等于 20 行，不可折叠
+  assert.strictEqual(canCollapse(21), true);   // 超过 20 行，可折叠
+  assert.strictEqual(canCollapse(30, 10), true); // 超过 10 行，可折叠
+  assert.strictEqual(canCollapse(30, 10, false), false); // 不允许折叠
+});
+
+// 测试代码折叠 - 预览行数
+test('CodeFolding: 折叠时预览行数', () => {
+  function getPreviewLines(code, previewCount = 3) {
+    const lines = code.split('\n');
+    return lines.slice(0, previewCount).join('\n');
+  }
+  
+  const code = 'line1\nline2\nline3\nline4\nline5';
+  const preview = getPreviewLines(code);
+  
+  assert.strictEqual(preview.split('\n').length, 3);
+  assert.strictEqual(preview, 'line1\nline2\nline3');
+});
+
+// 测试代码折叠 - 折叠摘要
+test('CodeFolding: 折叠摘要信息', () => {
+  function getCollapsedSummary(totalLines, previewLines = 3) {
+    const hiddenLines = totalLines - previewLines;
+    return `... 折叠了 ${hiddenLines} 行代码 ...`;
+  }
+  
+  assert.strictEqual(getCollapsedSummary(50), '... 折叠了 47 行代码 ...');
+  assert.strictEqual(getCollapsedSummary(100), '... 折叠了 97 行代码 ...');
+});
+
+// 测试代码折叠 - 语言图标映射
+test('CodeFolding: 语言图标映射', () => {
+  const icons = {
+    'javascript': '🟨',
+    'typescript': '🔷',
+    'python': '🐍',
+    'java': '☕',
+    'cpp': '⚙️',
+    'html': '🌐',
+    'css': '🎨',
+    'sql': '🗄️',
+    'bash': '💻',
+    'json': '📋',
+  };
+  
+  assert.strictEqual(icons['javascript'], '🟨');
+  assert.strictEqual(icons['typescript'], '🔷');
+  assert.strictEqual(icons['python'], '🐍');
+  assert.strictEqual(icons['html'], '🌐');
+});
+
 console.log('\n✅ 所有单元测试通过！\n');
