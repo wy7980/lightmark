@@ -13,6 +13,7 @@
     saveFile: void
     themeChange: { theme: 'light' | 'dark' }
     insertTable: void
+    insertTask: void
     togglePreview: void
     toggleFocus: void
     toggleTypewriter: void
@@ -30,6 +31,9 @@
       </button>
       <button class="btn" title="插入表格" on:click={() => dispatch('insertTable')}>
         📊 表格
+      </button>
+      <button class="btn" title="插入任务列表" on:click={() => dispatch('insertTask')}>
+        ✅ 任务
       </button>
     </div>
     
