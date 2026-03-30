@@ -25,7 +25,7 @@ jobs:
         run: npm install
 
       - name: Build frontend
-        run: npm run build
+        run: npm run build:frontend
 
       - name: Upload dist
         uses: actions/upload-artifact@v4
