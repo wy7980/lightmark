@@ -6,11 +6,25 @@
   
   // 错误处理
   let loadError: string | null = null
+  let isLoaded = false
+  
+  // 组件挂载时检查
+  function handleMount() {
+    console.log('[LightMark] App mounted')
+    isLoaded = true
+  }
   
   function handleError(error: unknown) {
     console.error('App error:', error)
     loadError = error instanceof Error ? error.message : String(error)
   }
+  
+  // 监听加载
+  setTimeout(() => {
+    if (!isLoaded && !loadError) {
+      loadError = '加载超时，请检查控制台日志'
+    }
+  }, 5000)
   
   let filePath: string | null = null
   let content = ''
@@ -100,12 +114,13 @@
 </script>
 
 <template>
-  <div class="app">
+  <div class="app" on:mount={handleMount}>
     {#if loadError}
       <div class="error-container">
         <h2>❌ 加载错误</h2>
         <p>{loadError}</p>
         <button on:click={() => window.location.reload()}>重新加载</button>
+        <p class="error-hint">提示：按 F12 打开开发者工具查看详情</p>
       </div>
     {:else}
     <Toolbar 
@@ -187,6 +202,15 @@
   
   .error-container button:hover {
     background: #1565c0;
+  }
+  
+  .error-hint {
+    margin-top: 16px;
+    font-size: 12px;
+    color: #666;
+    background: #f0f0f0;
+    padding: 8px 12px;
+    border-radius: 4px;
   }
   
   .main-content {

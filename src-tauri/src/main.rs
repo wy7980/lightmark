@@ -145,10 +145,24 @@ fn main() {
         .setup(|app| {
             #[cfg(debug_assertions)]
             {
-                let window = app.get_webview_window("main").unwrap();
-                window.open_devtools();
+                if let Some(window) = app.get_webview_window("main") {
+                    window.open_devtools();
+                }
             }
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            match event {
+                tauri::WindowEvent::Focused(focused) => {
+                    if *focused {
+                        println!("[LightMark] Window focused");
+                    }
+                }
+                tauri::WindowEvent::Resized(size) => {
+                    println!("[LightMark] Window resized: {:?}", size);
+                }
+                _ => {}
+            }
         })
         .run(tauri::generate_context!())
         .expect("error while running lightmark application");
