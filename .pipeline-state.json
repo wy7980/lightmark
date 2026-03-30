@@ -1,12 +1,13 @@
 {
   "lastCheck": "2026-03-30T21:31:26.430Z",
-  "currentRunId": 23769822673,
+  "currentRunId": 23770136302,
   "currentStatus": "developing",
   "completedFeatures": [
     "内联预览（行内 Markdown 渲染）",
     "焦点模式（当前段落高亮）",
     "打字机模式（光标始终在屏幕中间）",
-    "侧边栏目录树"
+    "侧边栏目录树",
+    "标题层级缩进"
   ],
   "pendingFeatures": [
     "内联预览（行内 Markdown 渲染）",
@@ -47,14 +48,14 @@
     "正则表达式",
     "批量替换"
   ],
-  "lastCompletedAt": "2026-03-30T22:08:23.676Z",
+  "lastCompletedAt": "2026-03-30T22:15:09.900Z",
   "currentFeature": {
     "priority": "P?",
-    "name": "标题层级缩进",
+    "name": "点击跳转",
     "difficulty": "",
     "value": "",
     "status": "pending"
   },
-  "cycleCount": 3,
-  "buildStartTime": 1774908037000
+  "cycleCount": 4,
+  "buildStartTime": 1774908564000
 }
