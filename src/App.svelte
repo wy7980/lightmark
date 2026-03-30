@@ -4,6 +4,14 @@
   import Sidebar from './components/Sidebar.svelte'
   import { invoke } from '@tauri-apps/api/core'
   
+  // 错误处理
+  let loadError: string | null = null
+  
+  function handleError(error: unknown) {
+    console.error('App error:', error)
+    loadError = error instanceof Error ? error.message : String(error)
+  }
+  
   let filePath: string | null = null
   let content = ''
   let previewHtml = ''
@@ -93,6 +101,13 @@
 
 <template>
   <div class="app">
+    {#if loadError}
+      <div class="error-container">
+        <h2>❌ 加载错误</h2>
+        <p>{loadError}</p>
+        <button on:click={() => window.location.reload()}>重新加载</button>
+      </div>
+    {:else}
     <Toolbar 
       on:openFile={openFile}
       on:saveFile={saveFile}
@@ -127,6 +142,7 @@
       <span>字符：{charCount}</span>
       <span>{filePath ? filePath : '未打开文件'}</span>
     </div>
+    {/if}
   </div>
 </template>
 
@@ -135,6 +151,42 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+  }
+  
+  .error-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    color: #333;
+  }
+  
+  .error-container h2 {
+    margin-bottom: 16px;
+    color: #d32f2f;
+  }
+  
+  .error-container p {
+    margin-bottom: 24px;
+    max-width: 600px;
+    text-align: center;
+    line-height: 1.6;
+  }
+  
+  .error-container button {
+    padding: 12px 24px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  .error-container button:hover {
+    background: #1565c0;
   }
   
   .main-content {

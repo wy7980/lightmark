@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [svelte()],
   clearScreen: false,
   root: 'src',
+  base: './',
   server: {
     port: 1420,
     strictPort: true,
@@ -15,10 +16,20 @@ export default defineConfig({
   },
   envPrefix: ['VITE_', 'TAURI_'],
   build: {
-    target: process.env.TAURI_PLATFORM === 'windows' ? 'chrome105' : 'safari13',
+    target: 'chrome105',
     minify: !process.env.TAURI_DEBUG ? 'esbuild' : false,
     sourcemap: !!process.env.TAURI_DEBUG,
     outDir: '../dist',
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['@codemirror/view', '@codemirror/state', '@codemirror/language'],
+        },
+      },
+    },
+  },
+  optimizeDeps: {
+    include: ['@codemirror/view', '@codemirror/state', '@codemirror/language'],
   },
 })
