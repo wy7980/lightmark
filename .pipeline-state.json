@@ -1,10 +1,11 @@
 {
   "lastCheck": "2026-03-30T21:31:26.430Z",
-  "currentRunId": 23769251777,
+  "currentRunId": 23769578360,
   "currentStatus": "developing",
   "completedFeatures": [
     "内联预览（行内 Markdown 渲染）",
-    "焦点模式（当前段落高亮）"
+    "焦点模式（当前段落高亮）",
+    "打字机模式（光标始终在屏幕中间）"
   ],
   "pendingFeatures": [
     "内联预览（行内 Markdown 渲染）",
@@ -45,14 +46,14 @@
     "正则表达式",
     "批量替换"
   ],
-  "lastCompletedAt": "2026-03-30T21:52:49.936Z",
+  "lastCompletedAt": "2026-03-30T21:59:36.036Z",
   "currentFeature": {
     "priority": "P?",
-    "name": "打字机模式（光标始终在屏幕中间）",
+    "name": "侧边栏目录树",
     "difficulty": "",
     "value": "",
     "status": "pending"
   },
-  "cycleCount": 1,
-  "buildStartTime": 1774907104000
+  "cycleCount": 2,
+  "buildStartTime": 1774907631000
 }
