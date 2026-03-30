@@ -12,7 +12,8 @@
     "阅读进度指示",
     "语法高亮（Prism.js / highlight.js）",
     "代码折叠",
-    "一键复制"
+    "一键复制",
+    "语言选择器"
   ],
   "pendingFeatures": [
     "内联预览（行内 Markdown 渲染）",
@@ -61,6 +62,6 @@
     "value": "",
     "status": "pending"
   },
-  "cycleCount": 9,
+  "cycleCount": 10,
   "buildStartTime": 1774909905000
 }
