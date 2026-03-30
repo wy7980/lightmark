@@ -38,6 +38,9 @@
   let autoSave = true
   let sidebarOpen = true
   let theme: 'light' | 'dark' = 'light'
+  let previewMode: 'edit' | 'preview' = 'edit'
+  let focusMode = false
+  let typewriterMode = false
   
   // 应用主题
   function applyTheme(newTheme: 'light' | 'dark') {
@@ -49,6 +52,24 @@
   
   // 初始化主题
   applyTheme('light')
+  
+  // 键盘快捷键
+  function handleKeydown(e: KeyboardEvent) {
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === '1') {
+        e.preventDefault()
+        previewMode = 'edit'
+      } else if (e.key === '2') {
+        e.preventDefault()
+        previewMode = 'preview'
+      }
+    }
+  }
+  
+  onMount(() => {
+    window.addEventListener('keydown', handleKeydown)
+    return () => window.removeEventListener('keydown', handleKeydown)
+  })
   
   // 防抖解析
   let parseTimeout: number
@@ -145,8 +166,14 @@
       bind:sidebarOpen
       bind:autoSave
       bind:theme
+      bind:previewMode
+      bind:focusMode
+      bind:typewriterMode
       on:themeChange={(e) => applyTheme(e.detail.theme)}
       on:insertTable={() => showTableEditor = true}
+      on:togglePreview={() => previewMode = previewMode === 'edit' ? 'preview' : 'edit'}
+      on:toggleFocus={() => focusMode = !focusMode}
+      on:toggleTypewriter={() => typewriterMode = !typewriterMode}
     />
     
     {#if showTableEditor}
@@ -182,18 +209,20 @@
       
       <div class="editor-container">
         <ImageDrop on:imageInsert={(e) => {
-          // 插入 Markdown 图片语法
           const markdown = `\n![${e.detail.alt}](${e.detail.src})\n`
           content += markdown
           handleContentChange(content)
         }}>
           <Editor 
             content={content}
+            previewMode={previewMode}
+            focusMode={focusMode}
+            typewriterMode={typewriterMode}
             on:change={(e) => handleContentChange(e.detail)}
           />
         </ImageDrop>
         
-        <div class="preview" style:display={sidebarOpen ? 'none' : 'block'}>
+        <div class="preview" style:display={sidebarOpen || previewMode === 'preview' ? 'block' : 'none'}>
           {@html previewHtml}
         </div>
       </div>

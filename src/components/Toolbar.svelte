@@ -4,12 +4,18 @@
   export let sidebarOpen = $bindable(true)
   export let autoSave = $bindable(true)
   export let theme: 'light' | 'dark' = 'light'
+  export let previewMode: 'edit' | 'preview' = 'edit'
+  export let focusMode = false
+  export let typewriterMode = false
   
   const dispatch = createEventDispatcher<{
     openFile: void
     saveFile: void
     themeChange: { theme: 'light' | 'dark' }
     insertTable: void
+    togglePreview: void
+    toggleFocus: void
+    toggleTypewriter: void
   }>()
 </script>
 
@@ -32,6 +38,39 @@
     </div>
     
     <div class="toolbar-right">
+      <div class="mode-buttons">
+        <button 
+          class="mode-btn {previewMode === 'edit' ? 'active' : ''}"
+          on:click={() => dispatch('togglePreview')}
+          title="编辑模式 (Ctrl+1)"
+        >
+          ✏️
+        </button>
+        <button 
+          class="mode-btn {previewMode === 'preview' ? 'active' : ''}"
+          on:click={() => dispatch('togglePreview')}
+          title="预览模式 (Ctrl+2)"
+        >
+          👁️
+        </button>
+      </div>
+      
+      <button 
+        class="mode-btn {focusMode ? 'active' : ''}"
+        on:click={() => dispatch('toggleFocus')}
+        title="焦点模式"
+      >
+        🎯
+      </button>
+      
+      <button 
+        class="mode-btn {typewriterMode ? 'active' : ''}"
+        on:click={() => dispatch('toggleTypewriter')}
+        title="打字机模式"
+      >
+        ⌨️
+      </button>
+      
       <ThemeSwitcher 
         currentTheme={theme}
         on:themeChange={(e) => dispatch('themeChange', e.detail)}
@@ -113,5 +152,35 @@
   
   .toggle-label input {
     cursor: pointer;
+  }
+  
+  .mode-buttons {
+    display: flex;
+    gap: 2px;
+    border-right: 1px solid #404040;
+    padding-right: 8px;
+    margin-right: 8px;
+  }
+  
+  .mode-btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  
+  .mode-btn:hover {
+    background: #404040;
+  }
+  
+  .mode-btn.active {
+    background: #1976d2;
   }
 </style>
