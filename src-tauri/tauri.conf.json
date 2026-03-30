@@ -7,7 +7,12 @@
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "npx vite build",
-    "frontendDist": "../dist"
+    "frontendDist": "../dist",
+    "devUrlAllowlist": ["http://localhost:1420"],
+    "assetProtocol": {
+      "scope": ["**"],
+      "enable": true
+    }
   },
   "app": {
     "withGlobalTauri": true,
