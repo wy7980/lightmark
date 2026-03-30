@@ -2,6 +2,7 @@
   import Editor from './components/Editor.svelte'
   import Toolbar from './components/Toolbar.svelte'
   import Sidebar from './components/Sidebar.svelte'
+  import ImageDrop from './components/ImageDrop.svelte'
   import { invoke } from '@tauri-apps/api/core'
   
   // 错误处理
@@ -160,10 +161,17 @@
       />
       
       <div class="editor-container">
-        <Editor 
-          content={content}
-          on:change={(e) => handleContentChange(e.detail)}
-        />
+        <ImageDrop on:imageInsert={(e) => {
+          // 插入 Markdown 图片语法
+          const markdown = `\n![${e.detail.alt}](${e.detail.src})\n`
+          content += markdown
+          handleContentChange(content)
+        }}>
+          <Editor 
+            content={content}
+            on:change={(e) => handleContentChange(e.detail)}
+          />
+        </ImageDrop>
         
         <div class="preview" style:display={sidebarOpen ? 'none' : 'block'}>
           {@html previewHtml}
