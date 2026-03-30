@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build && tauri build",
-    "tauri": "tauri"
+    "build:frontend": "vite build",
+    "build:tauri": "tauri build",
+    "tauri": "tauri",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build"
   },
   "dependencies": {
     "@codemirror/commands": "^6.3.3",
