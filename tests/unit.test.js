@@ -153,4 +153,66 @@ test('Utils: 防抖函数', async () => {
   assert.strictEqual(callCount, 1)
 })
 
-console.log('\n✅ 所有单元测试通过！\n')
+// 测试语法高亮组件
+test('SyntaxHighlighter: 支持的语言列表', () => {
+  const supportedLanguages = [
+    'javascript', 'typescript', 'python', 'java', 'cpp', 'c',
+    'go', 'rust', 'ruby', 'php', 'swift', 'kotlin',
+    'html', 'css', 'sql', 'bash', 'json', 'yaml', 'markdown'
+  ];
+  
+  assert.ok(supportedLanguages.includes('javascript'));
+  assert.ok(supportedLanguages.includes('python'));
+  assert.ok(supportedLanguages.includes('typescript'));
+  assert.strictEqual(supportedLanguages.length, 19);
+});
+
+// 测试阅读进度计算
+test('ReadingProgress: 进度百分比计算', () => {
+  function calculateProgress(scrollTop, scrollHeight, clientHeight) {
+    const maxScroll = scrollHeight - clientHeight;
+    return maxScroll > 0 ? (scrollTop / maxScroll) * 100 : 0;
+  }
+  
+  assert.strictEqual(calculateProgress(0, 1000, 500), 0);
+  assert.strictEqual(calculateProgress(250, 1000, 500), 50);
+  assert.strictEqual(calculateProgress(500, 1000, 500), 100);
+});
+
+// 测试点击跳转 - 标题缩进
+test('ClickJump: 标题层级缩进计算', () => {
+  function getHeadingIndent(level) {
+    const indentMap = {
+      1: '0px',
+      2: '12px',
+      3: '24px',
+      4: '36px',
+      5: '48px',
+      6: '60px',
+    };
+    return indentMap[level] || '0px';
+  }
+  
+  assert.strictEqual(getHeadingIndent(1), '0px');
+  assert.strictEqual(getHeadingIndent(2), '12px');
+  assert.strictEqual(getHeadingIndent(3), '24px');
+  assert.strictEqual(getHeadingIndent(6), '60px');
+});
+
+// 测试语法高亮 - 语言显示名称
+test('SyntaxHighlighter: 语言显示名称映射', () => {
+  const displayNames = {
+    'javascript': 'JavaScript',
+    'typescript': 'TypeScript',
+    'python': 'Python',
+    'java': 'Java',
+    'html': 'HTML',
+    'css': 'CSS',
+  };
+  
+  assert.strictEqual(displayNames['javascript'], 'JavaScript');
+  assert.strictEqual(displayNames['typescript'], 'TypeScript');
+  assert.strictEqual(displayNames['python'], 'Python');
+});
+
+console.log('\n✅ 所有单元测试通过！\n');

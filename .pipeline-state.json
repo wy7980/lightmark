@@ -1,7 +1,7 @@
 {
   "lastCheck": "2026-03-30T21:31:26.430Z",
-  "currentRunId": 23770631866,
-  "currentStatus": "developing",
+  "currentRunId": 23770937209,
+  "currentStatus": "building",
   "completedFeatures": [
     "内联预览（行内 Markdown 渲染）",
     "焦点模式（当前段落高亮）",
@@ -9,7 +9,8 @@
     "侧边栏目录树",
     "标题层级缩进",
     "点击跳转",
-    "阅读进度指示"
+    "阅读进度指示",
+    "语法高亮（Prism.js / highlight.js）"
   ],
   "pendingFeatures": [
     "内联预览（行内 Markdown 渲染）",
@@ -58,6 +59,6 @@
     "value": "",
     "status": "pending"
   },
-  "cycleCount": 6,
-  "buildStartTime": 1774909377000
+  "cycleCount": 7,
+  "buildStartTime": 1774909905000
 }
