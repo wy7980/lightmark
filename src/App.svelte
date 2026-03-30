@@ -134,9 +134,14 @@
       <Sidebar 
         open={sidebarOpen}
         filePath={filePath}
+        content={content}
         on:fileSelect={(e) => {
           filePath = e.detail.path
           // TODO: 加载文件
+        }}
+        on:outlineScroll={(e) => {
+          // TODO: 滚动到对应标题位置
+          console.log('滚动到:', e.detail)
         }}
       />
       
