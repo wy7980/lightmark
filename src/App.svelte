@@ -6,11 +6,13 @@
   import TableEditor from './components/TableEditor.svelte'
   import TaskList from './components/TaskList.svelte'
   import EquationEditor from './components/EquationEditor.svelte'
+  import ExportDialog from './components/ExportDialog.svelte'
   import { invoke } from '@tauri-apps/api/core'
   
   let showTableEditor = false
   let showTaskEditor = false
   let showEquationEditor = false
+  let showExportDialog = false
   
   // 错误处理
   let loadError: string | null = null
@@ -177,6 +179,7 @@
       on:insertTable={() => showTableEditor = true}
       on:insertTask={() => showTaskEditor = true}
       on:insertEquation={() => showEquationEditor = true}
+      on:exportFile={() => showExportDialog = true}
       on:togglePreview={() => previewMode = previewMode === 'edit' ? 'preview' : 'edit'}
       on:toggleFocus={() => focusMode = !focusMode}
       on:toggleTypewriter={() => typewriterMode = !typewriterMode}
@@ -225,6 +228,20 @@
             content += e.detail.markdown
             handleContentChange(content)
             showEquationEditor = false
+          }} />
+        </div>
+      </div>
+    {/if}
+    
+    {#if showExportDialog}
+      <div class="modal-overlay" on:click={() => showExportDialog = false}>
+        <div class="modal-content" on:click|stopPropagation>
+          <div class="modal-header">
+            <h2>📤 导出</h2>
+            <button class="close-btn" on:click={() => showExportDialog = false}>✕</button>
+          </div>
+          <ExportDialog on:exportHtml={(e) => {
+            showExportDialog = false
           }} />
         </div>
       </div>

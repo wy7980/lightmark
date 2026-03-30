@@ -15,6 +15,7 @@
     insertTable: void
     insertTask: void
     insertEquation: void
+    exportFile: void
     togglePreview: void
     toggleFocus: void
     toggleTypewriter: void
@@ -29,6 +30,9 @@
       </button>
       <button class="btn" title="保存" on:click={() => dispatch('saveFile')}>
         💾 保存
+      </button>
+      <button class="btn" title="导出" on:click={() => dispatch('exportFile')}>
+        📤 导出
       </button>
       <button class="btn" title="插入表格" on:click={() => dispatch('insertTable')}>
         📊 表格
