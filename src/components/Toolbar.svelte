@@ -9,6 +9,7 @@
     openFile: void
     saveFile: void
     themeChange: { theme: 'light' | 'dark' }
+    insertTable: void
   }>()
 </script>
 
@@ -20,6 +21,9 @@
       </button>
       <button class="btn" title="保存" on:click={() => dispatch('saveFile')}>
         💾 保存
+      </button>
+      <button class="btn" title="插入表格" on:click={() => dispatch('insertTable')}>
+        📊 表格
       </button>
     </div>
     

@@ -3,7 +3,10 @@
   import Toolbar from './components/Toolbar.svelte'
   import Sidebar from './components/Sidebar.svelte'
   import ImageDrop from './components/ImageDrop.svelte'
+  import TableEditor from './components/TableEditor.svelte'
   import { invoke } from '@tauri-apps/api/core'
+  
+  let showTableEditor = false
   
   // 错误处理
   let loadError: string | null = null
@@ -143,7 +146,24 @@
       bind:autoSave
       bind:theme
       on:themeChange={(e) => applyTheme(e.detail.theme)}
+      on:insertTable={() => showTableEditor = true}
     />
+    
+    {#if showTableEditor}
+      <div class="modal-overlay" on:click={() => showTableEditor = false}>
+        <div class="modal-content" on:click|stopPropagation>
+          <div class="modal-header">
+            <h2>📊 插入表格</h2>
+            <button class="close-btn" on:click={() => showTableEditor = false}>✕</button>
+          </div>
+          <TableEditor on:tableInsert={(e) => {
+            content += e.detail.markdown
+            handleContentChange(content)
+            showTableEditor = false
+          }} />
+        </div>
+      </div>
+    {/if}
     
     <div class="main-content">
       <Sidebar 
@@ -240,6 +260,56 @@
     background: #f0f0f0;
     padding: 8px 12px;
     border-radius: 4px;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background: var(--bg-primary, #fff);
+    border-radius: 8px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color, #e0e0e0);
+  }
+  
+  .modal-header h2 {
+    margin: 0;
+    font-size: 18px;
+    color: var(--text-primary, #333);
+  }
+  
+  .close-btn {
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-secondary, #666);
+    border-radius: 4px;
+  }
+  
+  .close-btn:hover {
+    background: #f0f0f0;
   }
   
   .main-content {
