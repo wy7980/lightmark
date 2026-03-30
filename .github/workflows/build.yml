@@ -1,4 +1,4 @@
-name: Build LightMark
+name: Build LightMark for Windows
 
 on:
   push:
@@ -12,6 +12,8 @@ jobs:
   build-windows:
     name: Build for Windows
     runs-on: windows-latest
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout repository
@@ -42,11 +44,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: v__VERSION__
-          releaseName: "LightMark v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
-          releaseDraft: true
-          prerelease: false
+          releaseDraft: false
           args: --verbose
 
       - name: Upload Windows installer
@@ -63,151 +61,24 @@ jobs:
           path: src-tauri/target/release/LightMark.exe
           if-no-files-found: error
 
-  build-linux:
-    name: Build for Linux
-    runs-on: ubuntu-22.04
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-unknown-linux-gnu
-
-      - name: Install Linux dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            libgstreamer-plugins-base1.0-dev \
-            libgstreamer1.0-dev \
-            gstreamer1.0-plugins-good \
-            libjavascriptcoregtk-4.1-dev \
-            libsoup-3.0-dev \
-            libdbus-1-dev \
-            libxdo-dev \
-            libxcb1 \
-            libxcb-render0 \
-            libxcb-shape0 \
-            libxcb-xfixes0
-
-      - name: Install dependencies
-        run: npm ci --include=dev
-
-      - name: Build frontend
-        run: npm run build:frontend
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: v__VERSION__
-          releaseName: "LightMark v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
-          releaseDraft: true
-          prerelease: false
-          args: --verbose
-
-      - name: Upload Linux AppImage
-        uses: actions/upload-artifact@v4
-        with:
-          name: lightmark-linux-appimage
-          path: src-tauri/target/release/bundle/appimage/*.AppImage
-          if-no-files-found: error
-
-      - name: Upload Linux deb
-        uses: actions/upload-artifact@v4
-        with:
-          name: lightmark-linux-deb
-          path: src-tauri/target/release/bundle/deb/*.deb
-          if-no-files-found: error
-
-  build-macos:
-    name: Build for macOS
-    runs-on: macos-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin,aarch64-apple-darwin
-
-      - name: Install dependencies
-        run: npm ci --include=dev
-
-      - name: Build frontend
-        run: npm run build:frontend
-        env:
-          NODE_OPTIONS: "--max-old-space-size=4096"
-
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
-          APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-        with:
-          tagName: v__VERSION__
-          releaseName: "LightMark v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
-          releaseDraft: true
-          prerelease: false
-          args: --verbose
-
-      - name: Upload macOS dmg
-        uses: actions/upload-artifact@v4
-        with:
-          name: lightmark-macos-dmg
-          path: src-tauri/target/release/bundle/dmg/*.dmg
-          if-no-files-found: error
-
-      - name: Upload macOS app
-        uses: actions/upload-artifact@v4
-        with:
-          name: lightmark-macos-app
-          path: src-tauri/target/release/bundle/macos/*.app
-          if-no-files-found: error
-
   release:
     name: Create Release
-    needs: [build-windows, build-linux, build-macos]
+    needs: build-windows
     runs-on: ubuntu-22.04
     if: startsWith(github.ref, 'refs/tags/v')
     
     steps:
-      - name: Download all artifacts
+      - name: Download Windows artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
+          name: lightmark-windows-installer
+          path: artifacts/installer
+      
+      - name: Download portable
+        uses: actions/download-artifact@v4
+        with:
+          name: lightmark-windows-portable
+          path: artifacts/portable
 
       - name: List artifacts
         run: ls -R artifacts
@@ -215,8 +86,10 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/**/*
-          draft: true
+          files: |
+            artifacts/installer/*.exe
+            artifacts/portable/*.exe
+          draft: false
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
