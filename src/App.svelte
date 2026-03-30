@@ -5,10 +5,12 @@
   import ImageDrop from './components/ImageDrop.svelte'
   import TableEditor from './components/TableEditor.svelte'
   import TaskList from './components/TaskList.svelte'
+  import EquationEditor from './components/EquationEditor.svelte'
   import { invoke } from '@tauri-apps/api/core'
   
   let showTableEditor = false
   let showTaskEditor = false
+  let showEquationEditor = false
   
   // 错误处理
   let loadError: string | null = null
@@ -174,6 +176,7 @@
       on:themeChange={(e) => applyTheme(e.detail.theme)}
       on:insertTable={() => showTableEditor = true}
       on:insertTask={() => showTaskEditor = true}
+      on:insertEquation={() => showEquationEditor = true}
       on:togglePreview={() => previewMode = previewMode === 'edit' ? 'preview' : 'edit'}
       on:toggleFocus={() => focusMode = !focusMode}
       on:toggleTypewriter={() => typewriterMode = !typewriterMode}
@@ -206,6 +209,22 @@
             content += e.detail.markdown
             handleContentChange(content)
             showTaskEditor = false
+          }} />
+        </div>
+      </div>
+    {/if}
+    
+    {#if showEquationEditor}
+      <div class="modal-overlay" on:click={() => showEquationEditor = false}>
+        <div class="modal-content" on:click|stopPropagation>
+          <div class="modal-header">
+            <h2>∑ 数学公式</h2>
+            <button class="close-btn" on:click={() => showEquationEditor = false}>✕</button>
+          </div>
+          <EquationEditor on:equationInsert={(e) => {
+            content += e.detail.markdown
+            handleContentChange(content)
+            showEquationEditor = false
           }} />
         </div>
       </div>

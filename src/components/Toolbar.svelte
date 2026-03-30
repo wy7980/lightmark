@@ -14,6 +14,7 @@
     themeChange: { theme: 'light' | 'dark' }
     insertTable: void
     insertTask: void
+    insertEquation: void
     togglePreview: void
     toggleFocus: void
     toggleTypewriter: void
@@ -34,6 +35,9 @@
       </button>
       <button class="btn" title="插入任务列表" on:click={() => dispatch('insertTask')}>
         ✅ 任务
+      </button>
+      <button class="btn" title="插入数学公式" on:click={() => dispatch('insertEquation')}>
+        ∑ 公式
       </button>
     </div>
     
