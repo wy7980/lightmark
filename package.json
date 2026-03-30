@@ -10,7 +10,10 @@
     "build:tauri": "tauri build",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
-    "tauri:build": "tauri build"
+    "tauri:build": "tauri build",
+    "test": "node --test tests/*.test.js",
+    "test:unit": "node --test tests/unit.test.js",
+    "test:build": "node tests/build.test.js"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.1",
