@@ -1,10 +1,14 @@
 <script lang="ts">
+  import ThemeSwitcher from './ThemeSwitcher.svelte'
+  
   export let sidebarOpen = $bindable(true)
   export let autoSave = $bindable(true)
+  export let theme: 'light' | 'dark' = 'light'
   
   const dispatch = createEventDispatcher<{
     openFile: void
     saveFile: void
+    themeChange: { theme: 'light' | 'dark' }
   }>()
 </script>
 
@@ -24,6 +28,11 @@
     </div>
     
     <div class="toolbar-right">
+      <ThemeSwitcher 
+        currentTheme={theme}
+        on:themeChange={(e) => dispatch('themeChange', e.detail)}
+      />
+      
       <label class="toggle-label">
         <input type="checkbox" bind:checked={autoSave} />
         自动保存

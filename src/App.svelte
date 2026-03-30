@@ -33,6 +33,18 @@
   let charCount = 0
   let autoSave = true
   let sidebarOpen = true
+  let theme: 'light' | 'dark' = 'light'
+  
+  // 应用主题
+  function applyTheme(newTheme: 'light' | 'dark') {
+    theme = newTheme
+    document.documentElement.classList.remove('light-theme', 'dark-theme')
+    document.documentElement.classList.add(`${newTheme}-theme`)
+    document.documentElement.style.colorScheme = newTheme
+  }
+  
+  // 初始化主题
+  applyTheme('light')
   
   // 防抖解析
   let parseTimeout: number
@@ -128,6 +140,8 @@
       on:saveFile={saveFile}
       bind:sidebarOpen
       bind:autoSave
+      bind:theme
+      on:themeChange={(e) => applyTheme(e.detail.theme)}
     />
     
     <div class="main-content">
@@ -171,6 +185,8 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    background: var(--bg-primary, #fff);
+    color: var(--text-primary, #333);
   }
   
   .error-container {
