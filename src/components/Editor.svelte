@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte'
   import { Editor, rootCtx, defaultValueCtx, editorViewCtx, parserCtx } from '@milkdown/core'
+  import { commonmark } from '@milkdown/preset-commonmark'
   import { gfm } from '@milkdown/preset-gfm'
   import { history } from '@milkdown/plugin-history'
   import { listener, listenerCtx } from '@milkdown/plugin-listener'
@@ -28,7 +29,8 @@
             dispatch('change', markdown)
           })
         })
-        .use(gfm)          // GFM: tables, task lists, strikethrough (extends commonmark)
+        .use(commonmark)
+        .use(gfm)          // GFM: tables, task lists, strikethrough
         .use(history)
         .create()
       console.log('[LightMark] 编辑器初始化完成')
