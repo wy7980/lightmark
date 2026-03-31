@@ -9,6 +9,7 @@
   export let typewriterMode = false
   
   const dispatch = createEventDispatcher<{
+    newFile: void
     openFile: void
     saveFile: void
     themeChange: { theme: 'light' | 'dark' }
@@ -23,6 +24,9 @@
 
 <div class="toolbar">
     <div class="toolbar-left">
+      <button class="btn" title="新建文件 (Ctrl+N)" on:click={() => dispatch('newFile')}>
+        📄 新建
+      </button>
       <button class="btn" title="打开文件" on:click={() => dispatch('openFile')}>
         📁 打开
       </button>

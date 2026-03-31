@@ -9,7 +9,7 @@
   import EquationEditor from './components/EquationEditor.svelte'
   import ExportDialog from './components/ExportDialog.svelte'
   import { invoke } from '@tauri-apps/api/core'
-  import { open as openDialog } from '@tauri-apps/plugin-dialog'
+  import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog'
   
   let showTableEditor = false
   let showTaskEditor = false
@@ -64,7 +64,15 @@
   
   // 键盘快捷键
   function handleKeydown(e: KeyboardEvent) {
-    // 预留：可在此添加全局快捷键
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'n' || e.key === 'N') {
+        e.preventDefault()
+        newFile()
+      } else if (e.key === 's' || e.key === 'S') {
+        e.preventDefault()
+        saveFile()
+      }
+    }
   }
   
   onMount(() => {
@@ -98,6 +106,31 @@
           console.error('[LightMark] 自动保存失败:', err)
         }
       }, 1000)
+    }
+  }
+  
+  async function newFile() {
+    console.log('[LightMark] 新建文件对话框')
+    try {
+      const savePath = await saveDialog({
+        filters: [{ name: 'Markdown', extensions: ['md', 'markdown'] }],
+        defaultPath: 'untitled.md'
+      })
+      if (!savePath) {
+        console.log('[LightMark] 用户取消了新建操作')
+        return
+      }
+      console.log('[LightMark] 新建文件:', savePath)
+      // 写入空文件
+      await invoke('save_file', { path: savePath, content: '' })
+      // 加载到编辑器
+      filePath = savePath
+      content = ''
+      fileLoadKey++
+      handleContentChange('')
+      console.log('[LightMark] 新文件创建并加载完成')
+    } catch (err) {
+      console.error('[LightMark] 新建文件失败:', err)
     }
   }
   
@@ -160,6 +193,7 @@
       </div>
     {:else}
     <Toolbar 
+      on:newFile={newFile}
       on:openFile={openFile}
       on:saveFile={saveFile}
       bind:sidebarOpen
