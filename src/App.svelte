@@ -129,9 +129,13 @@
   async function openFile() {
     // TODO: 使用 Tauri 文件对话框
     console.log('[LightMark] 打开文件（暂未实现文件选择对话框）')
+    if (!filePath) {
+      console.warn('[LightMark] 尚未选择文件，等待文件对话框实现')
+      return
+    }
     try {
       const result = await invoke<FileResponse>('open_file', {
-        path: filePath || ''
+        path: filePath
       })
       console.log('[LightMark] 文件已读取:', result.path)
       filePath = result.path

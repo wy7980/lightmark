@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import { EditorView, lineNumbers, highlightActiveLineGutter, drawSelection, rectangularSelection } from '@codemirror/view'
+  import { EditorView, lineNumbers, highlightActiveLineGutter, drawSelection, rectangularSelection, keymap } from '@codemirror/view'
   import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
   import { oneDark } from '@codemirror/theme-one-dark'
   import { EditorState } from '@codemirror/state'
@@ -47,8 +47,7 @@
           markdown({ base: markdownLanguage }),
           oneDark,
           history(),
-          defaultKeymap,
-          historyKeymap,
+          keymap.of([...defaultKeymap, ...historyKeymap]),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
               localContent = update.state.doc.toString()
@@ -148,19 +147,6 @@
             '&.focus-mode .cm-line:not(.active-line)': {
               opacity: '0.6',
             },
-          }),
-          // 焦点模式扩展
-          previewMode === 'preview' && focusMode && EditorView.decorator.of((view) => {
-            const pos = view.state.selection.main.head
-            const line = view.state.doc.lineAt(pos)
-            return EditorView.decorator.of(view.state, {
-              filter: (from, to) => {
-                const lineAt = view.state.doc.lineAt(from)
-                return lineAt.number !== line.number
-              },
-              map: () => [],
-            })
-          }),
         ].filter(Boolean),
       }),
       parent: container,
