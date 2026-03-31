@@ -81,6 +81,7 @@
   .drop-zone {
     position: relative;
     height: 100%;
+    width: 100%;
   }
   
   .drop-zone.dragging {
