@@ -9,6 +9,7 @@
   import EquationEditor from './components/EquationEditor.svelte'
   import ExportDialog from './components/ExportDialog.svelte'
   import { invoke } from '@tauri-apps/api/core'
+  import { open as openDialog } from '@tauri-apps/plugin-dialog'
   
   let showTableEditor = false
   let showTaskEditor = false
@@ -127,19 +128,22 @@
   }
   
   async function openFile() {
-    // TODO: 使用 Tauri 文件对话框
-    console.log('[LightMark] 打开文件（暂未实现文件选择对话框）')
-    if (!filePath) {
-      console.warn('[LightMark] 尚未选择文件，等待文件对话框实现')
-      return
-    }
+    console.log('[LightMark] 打开文件对话框')
     try {
-      const result = await invoke<FileResponse>('open_file', {
-        path: filePath
+      const selected = await openDialog({
+        multiple: false,
+        filters: [{ name: 'Markdown', extensions: ['md', 'markdown', 'txt'] }]
       })
-      console.log('[LightMark] 文件已读取:', result.path)
+      if (!selected) {
+        console.log('[LightMark] 用户取消了文件选择')
+        return
+      }
+      const selectedPath = typeof selected === 'string' ? selected : selected.path
+      console.log('[LightMark] 已选择文件:', selectedPath)
+      const result = await invoke<FileResponse>('open_file', { path: selectedPath })
       filePath = result.path
       content = result.content
+      console.log('[LightMark] 文件已读取:', result.path)
       await parseContent(result.content)
     } catch (err) {
       console.error('[LightMark] 打开文件失败:', err)
