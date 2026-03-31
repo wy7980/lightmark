@@ -32,6 +32,11 @@
         .use(history)
         .create()
       console.log('[LightMark] 编辑器初始化完成')
+      // 自动聚焦，让光标在编辑器就绪后立即显示
+      setTimeout(() => {
+        const pm = container?.querySelector<HTMLElement>('.ProseMirror')
+        if (pm) pm.focus()
+      }, 100)
     } catch (err) {
       console.error('[LightMark] 编辑器初始化失败:', err)
     }
