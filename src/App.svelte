@@ -74,6 +74,7 @@
   }
   
   onMount(() => {
+    handleMount()
     window.addEventListener('keydown', handleKeydown)
     return () => window.removeEventListener('keydown', handleKeydown)
   })
@@ -157,7 +158,7 @@
   }
 </script>
 
-  <div class="app" on:mount={handleMount}>
+  <div class="app">
     {#if loadError}
       <div class="error-container">
         <h2>❌ 加载错误</h2>
