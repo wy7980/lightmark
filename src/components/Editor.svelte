@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte'
-  import { Editor, rootCtx, defaultValueCtx } from '@milkdown/core'
+  import { Editor, rootCtx, defaultValueCtx, editorViewCtx, parserCtx } from '@milkdown/core'
   import { commonmark } from '@milkdown/preset-commonmark'
   import { history } from '@milkdown/plugin-history'
   import { listener, listenerCtx } from '@milkdown/plugin-listener'
@@ -48,6 +48,27 @@
       await editor.destroy()
     }
   })
+
+  // 将 Markdown 文本解析为富文本节点插入光标处
+  export function insertMarkdown(markdownText: string) {
+    if (!editor) return
+    try {
+      editor.action((ctx) => {
+        const view = ctx.get(editorViewCtx)
+        const parser = ctx.get(parserCtx)
+        const doc = parser('\n\n' + markdownText.trim() + '\n\n')
+        if (!doc) return
+        const { state, dispatch } = view
+        const pos = state.selection.to
+        const tr = state.tr.insert(pos, doc.content)
+        dispatch(tr)
+        view.focus()
+      })
+    } catch (err) {
+      console.error('[LightMark] insertMarkdown 失败:', err)
+    }
+  }
+
   function focusEditor() {
     // 单击空白处时将焦点转入 ProseMirror
     const pm = container?.querySelector<HTMLElement>('.ProseMirror')

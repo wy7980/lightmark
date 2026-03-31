@@ -50,6 +50,7 @@
   let focusMode = false
   let typewriterMode = false
   let fileLoadKey = 0  // 用于在打开新文件时强制重建编辑器
+  let editorRef: any  // Editor 组件实例，用于调用 insertMarkdown()
   
   // 应用主题
   function applyTheme(newTheme: 'light' | 'dark') {
@@ -218,8 +219,7 @@
             <button class="close-btn" on:click={() => showTableEditor = false}>✕</button>
           </div>
           <TableEditor on:tableInsert={(e) => {
-            content += e.detail.markdown
-            handleContentChange(content)
+            editorRef?.insertMarkdown(e.detail.markdown)
             showTableEditor = false
           }} />
         </div>
@@ -234,8 +234,7 @@
             <button class="close-btn" on:click={() => showTaskEditor = false}>✕</button>
           </div>
           <TaskList on:taskInsert={(e) => {
-            content += e.detail.markdown
-            handleContentChange(content)
+            editorRef?.insertMarkdown(e.detail.markdown)
             showTaskEditor = false
           }} />
         </div>
@@ -250,8 +249,7 @@
             <button class="close-btn" on:click={() => showEquationEditor = false}>✕</button>
           </div>
           <EquationEditor on:equationInsert={(e) => {
-            content += e.detail.markdown
-            handleContentChange(content)
+            editorRef?.insertMarkdown(e.detail.markdown)
             showEquationEditor = false
           }} />
         </div>
@@ -290,11 +288,11 @@
       <div class="editor-container">
         <ImageDrop on:imageInsert={(e) => {
           const md = `\n![${e.detail.alt}](${e.detail.src})\n`
-          content += md
-          handleContentChange(content)
+          editorRef?.insertMarkdown(md)
         }}>
           {#key fileLoadKey}
-          <Editor 
+          <Editor
+            bind:this={editorRef}
             content={content}
             focusMode={focusMode}
             typewriterMode={typewriterMode}
