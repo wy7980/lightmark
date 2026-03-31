@@ -43,31 +43,44 @@
       await editor.destroy()
     }
   })
+  function focusEditor() {
+    // 单击空白处时将焦点转入 ProseMirror
+    const pm = container?.querySelector<HTMLElement>('.ProseMirror')
+    if (pm) pm.focus()
+  }
 </script>
 
-<div bind:this={container} class="milkdown-container" class:focus-mode={focusMode} class:typewriter-mode={typewriterMode}></div>
+<div
+  bind:this={container}
+  class="milkdown-container"
+  class:focus-mode={focusMode}
+  class:typewriter-mode={typewriterMode}
+  on:click={focusEditor}
+></div>
 
 <style>
   .milkdown-container {
     height: 100%;
     overflow-y: auto;
     background: var(--bg-primary, #fff);
+    cursor: text;  /* 提示整个区域可编辑 */
   }
 
   /* ===== Milkdown 全局样式 ===== */
 
   /* 编辑器主体 */
   :global(.milkdown) {
-    min-height: 100%;
+    min-height: 100%;  /* 始终充满容器 */
     padding: 40px 0;
     background: var(--bg-primary, #fff);
   }
 
   :global(.milkdown .ProseMirror) {
     outline: none;
+    min-height: 100%;   /* 空文档时消除点击盲区 */
     max-width: 800px;
     margin: 0 auto;
-    padding: 0 48px 80px;
+    padding: 0 48px 200px; /* 底部大间距保证可点击 */
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
     font-size: 16px;
     line-height: 1.8;
