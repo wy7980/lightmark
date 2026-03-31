@@ -1,8 +1,9 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte'
   import ThemeSwitcher from './ThemeSwitcher.svelte'
   
-  export let sidebarOpen = $bindable(true)
-  export let autoSave = $bindable(true)
+  export let sidebarOpen = true
+  export let autoSave = true
   export let theme: 'light' | 'dark' = 'light'
   export let previewMode: 'edit' | 'preview' = 'edit'
   export let focusMode = false
@@ -22,8 +23,7 @@
   }>()
 </script>
 
-<template>
-  <div class="toolbar">
+<div class="toolbar">
     <div class="toolbar-left">
       <button class="btn" title="打开文件" on:click={() => dispatch('openFile')}>
         📁 打开
@@ -101,8 +101,7 @@
         {sidebarOpen ? '◀' : '▶'}
       </button>
     </div>
-  </div>
-</template>
+</div>
 
 <style>
   .toolbar {

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import Editor from './components/Editor.svelte'
   import Toolbar from './components/Toolbar.svelte'
   import Sidebar from './components/Sidebar.svelte'
@@ -156,7 +157,6 @@
   }
 </script>
 
-<template>
   <div class="app" on:mount={handleMount}>
     {#if loadError}
       <div class="error-container">
@@ -290,7 +290,6 @@
     </div>
     {/if}
   </div>
-</template>
 
 <style>
   .app {
