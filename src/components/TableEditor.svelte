@@ -89,8 +89,11 @@
   }
   
   function updateTable() {
-    const markdown = generateMarkdown()
-    dispatch('tableInsert', { markdown })
+    table = table  // 触发响应式更新
+  }
+
+  function confirmInsert() {
+    dispatch('tableInsert', { markdown: generateMarkdown() })
   }
   
   function getAlignmentIcon(colIdx: number): string {
@@ -171,7 +174,10 @@
   </div>
   
   <div class="table-footer">
-    <p class="hint">💡 编辑表格后会自动转换为 Markdown 语法</p>
+    <button class="insert-btn" on:click={confirmInsert}>
+      ✅ 插入表格
+    </button>
+    <p class="hint">💡 编辑完成后点击「插入表格」</p>
   </div>
 </div>
 
@@ -298,6 +304,27 @@
   .hint {
     font-size: 12px;
     color: var(--text-secondary, #999);
-    margin: 0;
+    margin: 8px 0 0 0;
+  }
+
+  .table-footer {
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .insert-btn {
+    padding: 10px 28px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .insert-btn:hover {
+    background: #1565c0;
   }
 </style>

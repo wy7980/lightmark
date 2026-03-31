@@ -45,7 +45,11 @@
   }
   
   function updateMarkdown() {
-    const markdown = '\n' + tasks.map(t => 
+    tasks = tasks  // 触发响应式更新
+  }
+
+  function confirmInsert() {
+    const markdown = '\n' + tasks.map(t =>
       `- [${t.checked ? 'x' : ' '}] ${t.text}`
     ).join('\n') + '\n'
     dispatch('taskInsert', { markdown })
@@ -106,7 +110,10 @@
   </ul>
   
   <div class="task-footer">
-    <p class="hint">💡 任务会自动转换为 GitHub 风格 Markdown 语法</p>
+    <button class="insert-btn" on:click={confirmInsert}>
+      ✅ 插入任务列表
+    </button>
+    <p class="hint">💡 编辑完成后点击「插入任务列表」</p>
   </div>
 </div>
 
@@ -282,6 +289,27 @@
   .hint {
     font-size: 12px;
     color: var(--text-secondary, #999);
-    margin: 0;
+    margin: 8px 0 0 0;
+  }
+
+  .task-footer {
+    margin-top: 16px;
+    text-align: center;
+  }
+
+  .insert-btn {
+    padding: 10px 28px;
+    background: #1976d2;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .insert-btn:hover {
+    background: #1565c0;
   }
 </style>
