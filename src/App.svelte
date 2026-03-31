@@ -64,15 +64,7 @@
   
   // 键盘快捷键
   function handleKeydown(e: KeyboardEvent) {
-    if (e.ctrlKey || e.metaKey) {
-      if (e.key === '1') {
-        e.preventDefault()
-        previewMode = 'edit'
-      } else if (e.key === '2') {
-        e.preventDefault()
-        previewMode = 'preview'
-      }
-    }
+    // 预留：可在此添加全局快捷键
   }
   
   onMount(() => {

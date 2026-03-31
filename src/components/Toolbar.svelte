@@ -48,22 +48,6 @@
     </div>
     
     <div class="toolbar-right">
-      <div class="mode-buttons">
-        <button 
-          class="mode-btn {previewMode === 'edit' ? 'active' : ''}"
-          on:click={() => dispatch('togglePreview')}
-          title="编辑模式 (Ctrl+1)"
-        >
-          ✏️
-        </button>
-        <button 
-          class="mode-btn {previewMode === 'preview' ? 'active' : ''}"
-          on:click={() => dispatch('togglePreview')}
-          title="预览模式 (Ctrl+2)"
-        >
-          👁️
-        </button>
-      </div>
       
       <button 
         class="mode-btn {focusMode ? 'active' : ''}"
