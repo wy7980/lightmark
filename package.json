@@ -27,6 +27,10 @@
     "@lezer/highlight": "^1.2.0",
     "@tauri-apps/api": "^2.0.0",
     "@tauri-apps/plugin-dialog": "^2.0.0",
+    "@milkdown/core": "^7.0.0",
+    "@milkdown/preset-commonmark": "^7.0.0",
+    "@milkdown/plugin-listener": "^7.0.0",
+    "@milkdown/plugin-history": "^7.0.0",
     "chokidar": "^5.0.0",
     "highlight.js": "^11.11.1",
     "katex": "^0.16.44"

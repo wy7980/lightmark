@@ -5,7 +5,6 @@
   export let sidebarOpen = true
   export let autoSave = true
   export let theme: 'light' | 'dark' = 'light'
-  export let previewMode: 'edit' | 'preview' = 'edit'
   export let focusMode = false
   export let typewriterMode = false
   
@@ -17,7 +16,6 @@
     insertTask: void
     insertEquation: void
     exportFile: void
-    togglePreview: void
     toggleFocus: void
     toggleTypewriter: void
   }>()

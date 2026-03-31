@@ -42,15 +42,14 @@
   
   let filePath: string | null = null
   let content = ''
-  let previewHtml = ''
   let wordCount = 0
   let charCount = 0
   let autoSave = true
   let sidebarOpen = true
   let theme: 'light' | 'dark' = 'light'
-  let previewMode: 'edit' | 'preview' = 'edit'
   let focusMode = false
   let typewriterMode = false
+  let fileLoadKey = 0  // 用于在打开新文件时强制重建编辑器
   
   // 应用主题
   function applyTheme(newTheme: 'light' | 'dark') {
@@ -86,45 +85,28 @@
     }
   })
   
-  // 防抖解析
-  let parseTimeout: number
-  
-  async function parseContent(newContent: string) {
-    clearTimeout(parseTimeout)
-    
-    return new Promise<void>((resolve) => {
-      parseTimeout = setTimeout(async () => {
-        try {
-          console.log(`[LightMark] 调用 parse_markdown，内容长度: ${newContent.length}`)
-          const result = await invoke<ParseResult>('parse_markdown', {
-            content: newContent
-          })
-          previewHtml = result.html
-          wordCount = result.word_count
-          charCount = result.char_count
-          console.log(`[LightMark] 解析完成，字数: ${wordCount}，字符数: ${charCount}`)
-          
-          // 自动保存
-          if (autoSave && filePath) {
-            console.log(`[LightMark] 自动保存: ${filePath}`)
-            await invoke('save_file', {
-              path: filePath,
-              content: newContent
-            })
-            console.log('[LightMark] 自动保存完成')
-          }
-        } catch (err) {
-          console.error('[LightMark] 解析失败:', err)
-        }
-        resolve()
-      }, 50) // 50ms 防抖
-    })
-  }
-  
-  async function handleContentChange(newContent: string) {
+  // 自动保存防抖
+  let saveTimeout: number
+
+  function handleContentChange(newContent: string) {
     content = newContent
-    console.log(`[LightMark] 内容变更，长度: ${newContent.length}`)
-    await parseContent(newContent)
+    // 前端直接计算字数（去除 markdown 标记后按空白分隔）
+    const plainText = newContent.replace(/[#*`>\[\]()!_~]/g, '').trim()
+    wordCount = plainText ? plainText.split(/\s+/).length : 0
+    charCount = newContent.length
+    // 自动保存（1s 防抖）
+    clearTimeout(saveTimeout)
+    if (autoSave && filePath) {
+      saveTimeout = setTimeout(async () => {
+        try {
+          console.log(`[LightMark] 自动保存: ${filePath}`)
+          await invoke('save_file', { path: filePath, content: newContent })
+          console.log('[LightMark] 自动保存完成')
+        } catch (err) {
+          console.error('[LightMark] 自动保存失败:', err)
+        }
+      }, 1000)
+    }
   }
   
   async function openFile() {
@@ -143,8 +125,9 @@
       const result = await invoke<FileResponse>('open_file', { path: selectedPath })
       filePath = result.path
       content = result.content
+      fileLoadKey++  // 触发编辑器重建以加载新内容
+      handleContentChange(result.content)
       console.log('[LightMark] 文件已读取:', result.path)
-      await parseContent(result.content)
     } catch (err) {
       console.error('[LightMark] 打开文件失败:', err)
     }
@@ -173,12 +156,6 @@
     content: string
     path: string
   }
-  
-  interface ParseResult {
-    html: string
-    word_count: number
-    char_count: number
-  }
 </script>
 
   <div class="app">
@@ -196,7 +173,6 @@
       bind:sidebarOpen
       bind:autoSave
       bind:theme
-      bind:previewMode
       bind:focusMode
       bind:typewriterMode
       on:themeChange={(e) => applyTheme(e.detail.theme)}
@@ -204,7 +180,6 @@
       on:insertTask={() => showTaskEditor = true}
       on:insertEquation={() => showEquationEditor = true}
       on:exportFile={() => showExportDialog = true}
-      on:togglePreview={() => previewMode = previewMode === 'edit' ? 'preview' : 'edit'}
       on:toggleFocus={() => focusMode = !focusMode}
       on:toggleTypewriter={() => typewriterMode = !typewriterMode}
     />
@@ -288,22 +263,19 @@
       
       <div class="editor-container">
         <ImageDrop on:imageInsert={(e) => {
-          const markdown = `\n![${e.detail.alt}](${e.detail.src})\n`
-          content += markdown
+          const md = `\n![${e.detail.alt}](${e.detail.src})\n`
+          content += md
           handleContentChange(content)
         }}>
+          {#key fileLoadKey}
           <Editor 
             content={content}
-            previewMode={previewMode}
             focusMode={focusMode}
             typewriterMode={typewriterMode}
             on:change={(e) => handleContentChange(e.detail)}
           />
+          {/key}
         </ImageDrop>
-        
-        <div class="preview" style:display={sidebarOpen || previewMode === 'preview' ? 'block' : 'none'}>
-          {@html previewHtml}
-        </div>
       </div>
     </div>
     
