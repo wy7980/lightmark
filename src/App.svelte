@@ -21,13 +21,15 @@
   
   // 组件挂载时检查
   function handleMount() {
-    console.log('[LightMark] App mounted')
+    console.log('[LightMark] App 组件已挂载')
+    console.log('[LightMark] 运行环境:', navigator.userAgent)
     isLoaded = true
   }
   
   function handleError(error: unknown) {
-    console.error('App error:', error)
-    loadError = error instanceof Error ? error.message : String(error)
+    const msg = error instanceof Error ? error.message : String(error)
+    console.error('[LightMark] App 错误:', msg, error)
+    loadError = msg
   }
   
   // 监听加载
@@ -74,9 +76,13 @@
   }
   
   onMount(() => {
+    console.log('[LightMark] onMount 触发，注册快捷键')
     handleMount()
     window.addEventListener('keydown', handleKeydown)
-    return () => window.removeEventListener('keydown', handleKeydown)
+    return () => {
+      console.log('[LightMark] onDestroy，注销快捷键')
+      window.removeEventListener('keydown', handleKeydown)
+    }
   })
   
   // 防抖解析
@@ -88,22 +94,26 @@
     return new Promise<void>((resolve) => {
       parseTimeout = setTimeout(async () => {
         try {
+          console.log(`[LightMark] 调用 parse_markdown，内容长度: ${newContent.length}`)
           const result = await invoke<ParseResult>('parse_markdown', {
             content: newContent
           })
           previewHtml = result.html
           wordCount = result.word_count
           charCount = result.char_count
+          console.log(`[LightMark] 解析完成，字数: ${wordCount}，字符数: ${charCount}`)
           
           // 自动保存
           if (autoSave && filePath) {
+            console.log(`[LightMark] 自动保存: ${filePath}`)
             await invoke('save_file', {
               path: filePath,
               content: newContent
             })
+            console.log('[LightMark] 自动保存完成')
           }
         } catch (err) {
-          console.error('解析失败:', err)
+          console.error('[LightMark] 解析失败:', err)
         }
         resolve()
       }, 50) // 50ms 防抖
@@ -112,37 +122,42 @@
   
   async function handleContentChange(newContent: string) {
     content = newContent
+    console.log(`[LightMark] 内容变更，长度: ${newContent.length}`)
     await parseContent(newContent)
   }
   
   async function openFile() {
     // TODO: 使用 Tauri 文件对话框
-    const testPath = '/home/node/.openclaw/workspace/test.md'
+    console.log('[LightMark] 打开文件（暂未实现文件选择对话框）')
     try {
       const result = await invoke<FileResponse>('open_file', {
-        path: testPath
+        path: filePath || ''
       })
+      console.log('[LightMark] 文件已读取:', result.path)
       filePath = result.path
       content = result.content
       await parseContent(result.content)
     } catch (err) {
-      console.error('打开文件失败:', err)
+      console.error('[LightMark] 打开文件失败:', err)
     }
   }
   
   async function saveFile() {
     if (!filePath) {
+      console.warn('[LightMark] 保存失败：未指定文件路径')
       // TODO: 另存为
       return
     }
     
+    console.log('[LightMark] 手动保存:', filePath)
     try {
       await invoke('save_file', {
         path: filePath,
         content: content
       })
+      console.log('[LightMark] 手动保存完成')
     } catch (err) {
-      console.error('保存失败:', err)
+      console.error('[LightMark] 保存失败:', err)
     }
   }
   
