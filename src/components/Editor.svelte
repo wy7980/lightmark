@@ -147,6 +147,7 @@
             '&.focus-mode .cm-line:not(.active-line)': {
               opacity: '0.6',
             },
+          }),
         ].filter(Boolean),
       }),
       parent: container,
