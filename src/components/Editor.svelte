@@ -6,6 +6,8 @@
   import { history } from '@milkdown/plugin-history'
   import { listener, listenerCtx } from '@milkdown/plugin-listener'
   import { math } from '@milkdown/plugin-math'
+  import { clipboard } from '@milkdown/plugin-clipboard'
+  import { tableBlock, tableBlockConfig } from '@milkdown/components/table-block'
   import 'katex/dist/katex.min.css'
 
   export let content = ''
@@ -30,11 +32,35 @@
           ctx.get(listenerCtx).markdownUpdated((_, markdown) => {
             dispatch('change', markdown)
           })
+          
+          try {
+            ctx.update(tableBlockConfig.key, (defaultConfig) => ({
+              ...defaultConfig,
+              renderButton: (renderType) => {
+                const btn = document.createElement('button')
+                btn.style.cssText = 'background:transparent;border:none;cursor:pointer;padding:2px;'
+                switch(renderType) {
+                  case 'add_row': btn.innerText = '➕'; break;
+                  case 'add_col': btn.innerText = '➕'; break;
+                  case 'delete_row': btn.innerText = '🗑️'; break;
+                  case 'delete_col': btn.innerText = '🗑️'; break;
+                  case 'align_col_left': btn.innerText = '⬅'; break;
+                  case 'align_col_center': btn.innerText = '⬌'; break;
+                  case 'align_col_right': btn.innerText = '➡'; break;
+                  case 'col_drag_handle': btn.innerText = '⣿'; break;
+                  case 'row_drag_handle': btn.innerText = '⣿'; break;
+                }
+                return btn
+              }
+            }))
+          } catch(e) {}
         })
         .use(commonmark)
         .use(gfm)          // GFM: tables, task lists, strikethrough
         .use(history)
         .use(math)
+        .use(clipboard)
+        .use(tableBlock)
         .create()
       console.log('[LightMark] 编辑器初始化完成')
       // 自动聚焦，让光标在编辑器就绪后立即显示
@@ -191,9 +217,25 @@
 
   /* 表格 */
   :global(.milkdown table) { border-collapse: collapse; width: 100%; margin: 16px 0; }
-  :global(.milkdown th, .milkdown td) { border: 1px solid #dfe2e5; padding: 8px 13px; }
+  :global(.milkdown th, .milkdown td) { border: 1px solid #dfe2e5; padding: 8px 13px; position: relative; }
   :global(.milkdown th) { background: #f6f8fa; font-weight: 600; }
   :global(.milkdown tr:nth-child(even)) { background: #f6f8fa; }
+  
+  /* 表格内联 UI 悬浮控件支持 */
+  :global(milkdown-table-block) {
+    display: block;
+    position: relative;
+    margin: 16px 0;
+  }
+  :global(milkdown-table-block .milkdown-table-block-toolbar) {
+    display: flex;
+    gap: 4px;
+    background: #fff;
+    border: 1px solid #dfe2e5;
+    padding: 4px;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
 
   /* 强调 */
   :global(.milkdown strong) { font-weight: 600; }
@@ -218,6 +260,10 @@
   :global(.dark-theme .milkdown th, .dark-theme .milkdown td) { border-color: #444c56; }
   :global(.dark-theme .milkdown tr:nth-child(even)) { background: #262c34; }
   :global(.dark-theme .milkdown hr) { border-color: #3a4048; }
+  :global(.dark-theme milkdown-table-block .milkdown-table-block-toolbar) {
+    background: #2d333b;
+    border-color: #444c56;
+  }
 
   /* ===== 专注模式 ===== */
   .milkdown-container.focus-mode :global(.milkdown .ProseMirror) {
