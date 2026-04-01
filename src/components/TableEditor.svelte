@@ -34,19 +34,60 @@
     table.rows.forEach(row => row.push('单元格'))
     updateTable()
   }
-  
-  function deleteRow(rowIdx: number) {
+
+  function insertRowAbove() {
+    if (!selectedCell) return addRow()
+    const rowIndex = Math.max(0, selectedCell.row)
+    table.rows.splice(rowIndex, 0, new Array(table.headers.length).fill('单元格'))
+    selectedCell.row++
+    updateTable()
+  }
+
+  function insertRowBelow() {
+    if (!selectedCell) return addRow()
+    const insertAt = selectedCell.row === -1 ? 0 : selectedCell.row + 1
+    table.rows.splice(insertAt, 0, new Array(table.headers.length).fill('单元格'))
+    updateTable()
+  }
+
+  function deleteCurrentRow() {
+    if (!selectedCell || selectedCell.row === -1) return
     if (table.rows.length > 1) {
-      table.rows.splice(rowIdx, 1)
+      table.rows.splice(selectedCell.row, 1)
+      selectedCell = null
       updateTable()
     }
   }
-  
-  function deleteColumn(colIdx: number) {
+
+  function insertColumnLeft() {
+    if (!selectedCell) return addColumn()
+    const colIdx = selectedCell.col
+    table.headers.splice(colIdx, 0, `列 ${table.headers.length + 1}`)
+    table.align.splice(colIdx, 0, 'left')
+    table.rows.forEach(row => row.splice(colIdx, 0, '单元格'))
+    selectedCell.col++
+    updateTable()
+  }
+
+  function insertColumnRight() {
+    if (!selectedCell) return addColumn()
+    const colIdx = selectedCell.col + 1
+    table.headers.splice(colIdx, 0, `列 ${table.headers.length + 1}`)
+    table.align.splice(colIdx, 0, 'left')
+    table.rows.forEach(row => row.splice(colIdx, 0, '单元格'))
+    updateTable()
+  }
+
+  function deleteCurrentColumn() {
+    if (!selectedCell) return
+    const colIdx = selectedCell.col
     if (table.headers.length > 1) {
-      table.headers.splice(colIdx, 1)
-      table.align.splice(colIdx, 1)
-      table.rows.forEach(row => row.splice(colIdx, 1))
+      if (colIdx >= 0) {
+        table.headers.splice(colIdx, 1)
+        table.align.splice(colIdx, 1)
+        table.rows.forEach(row => row.splice(colIdx, 1))
+      }
+      selectedCell = null
       updateTable()
     }
   }
@@ -107,11 +148,24 @@
 <div class="table-editor">
   <div class="table-toolbar">
     <div class="toolbar-group">
-      <button class="btn" on:click={addRow} title="添加行">
-        ➕ 行
+      <button class="btn" on:click={insertRowAbove} title="在上方插入行" disabled={!selectedCell}>
+        ⇧ 插入行
       </button>
-      <button class="btn" on:click={addColumn} title="添加列">
-        ➕ 列
+      <button class="btn" on:click={insertRowBelow} title="在下方插入行" disabled={!selectedCell}>
+        ⇩ 插入行
+      </button>
+      <button class="btn delete-btn" on:click={deleteCurrentRow} title="删除当前行" disabled={!selectedCell || selectedCell.row === -1 || table.rows.length <= 1}>
+        行 ✕
+      </button>
+      <div class="divider"></div>
+      <button class="btn" on:click={insertColumnLeft} title="在左侧插入列" disabled={!selectedCell}>
+        ⇦ 插入列
+      </button>
+      <button class="btn" on:click={insertColumnRight} title="在右侧插入列" disabled={!selectedCell}>
+        ⇨ 插入列
+      </button>
+      <button class="btn delete-btn" on:click={deleteCurrentColumn} title="删除当前列" disabled={!selectedCell || table.headers.length <= 1}>
+        列 ✕
       </button>
     </div>
     
@@ -146,9 +200,7 @@
                 on:focus={() => selectedCell = { row: -1, col: colIdx }}
               />
               <div class="column-actions">
-                <button class="icon-btn" on:click={() => deleteColumn(colIdx)} title="删除列">
-                  🗑️
-                </button>
+                <!-- 原有的删除列按钮暂时保留或移除，因为已经在工具栏提供了上下文按钮 -->
               </div>
             </th>
           {/each}
@@ -209,12 +261,34 @@
     border: 1px solid var(--border-color, #e0e0e0);
     border-radius: 4px;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 12px;
     transition: all 0.2s;
   }
   
-  .btn:hover {
+  .btn:hover:not(:disabled) {
     background: #e8e8e8;
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f5f5f5;
+  }
+
+  .delete-btn {
+    color: #d32f2f;
+    border-color: #ffcdd2;
+  }
+
+  .delete-btn:hover:not(:disabled) {
+    background: #ffebee;
+  }
+
+  .divider {
+    width: 1px;
+    height: 16px;
+    background: #d0d0d0;
+    margin: 0 4px;
   }
   
   .align-btn {
