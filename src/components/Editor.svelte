@@ -37,23 +37,23 @@
             ctx.update(tableBlockConfig.key, (defaultConfig) => ({
               ...defaultConfig,
               renderButton: (renderType) => {
-                const btn = document.createElement('button')
-                btn.style.cssText = 'background:transparent;border:none;cursor:pointer;padding:2px;'
                 switch(renderType) {
-                  case 'add_row': btn.innerText = '➕'; break;
-                  case 'add_col': btn.innerText = '➕'; break;
-                  case 'delete_row': btn.innerText = '🗑️'; break;
-                  case 'delete_col': btn.innerText = '🗑️'; break;
-                  case 'align_col_left': btn.innerText = '⬅'; break;
-                  case 'align_col_center': btn.innerText = '⬌'; break;
-                  case 'align_col_right': btn.innerText = '➡'; break;
-                  case 'col_drag_handle': btn.innerText = '⣿'; break;
-                  case 'row_drag_handle': btn.innerText = '⣿'; break;
+                  case 'add_row': return '➕';
+                  case 'add_col': return '➕';
+                  case 'delete_row': return '🗑️';
+                  case 'delete_col': return '🗑️';
+                  case 'align_col_left': return '⬅';
+                  case 'align_col_center': return '⬌';
+                  case 'align_col_right': return '➡';
+                  case 'col_drag_handle': return '⣿';
+                  case 'row_drag_handle': return '⣿';
+                  default: return '';
                 }
-                return btn
               }
             }))
-          } catch(e) {}
+          } catch(e) {
+            console.warn('[LightMark] tableBlockConfig 设置失败:', e)
+          }
         })
         .use(commonmark)
         .use(gfm)          // GFM: tables, task lists, strikethrough
@@ -61,6 +61,18 @@
         .use(math)
         .use(clipboard)
         .use(tableBlock)
+        .config(ctx => {
+          // 配置 math 插件以防止 KaTeX 解析错误导致编辑器崩溃
+          import('@milkdown/plugin-math').then(({ mathConfig }) => {
+            ctx.update(mathConfig.key, (prev) => ({
+              ...prev,
+              katexOptions: {
+                ...(prev?.katexOptions || {}),
+                throwOnError: false,
+              }
+            }))
+          }).catch(() => {})
+        })
         .create()
       console.log('[LightMark] 编辑器初始化完成')
       // 自动聚焦，让光标在编辑器就绪后立即显示
@@ -232,9 +244,25 @@
     gap: 4px;
     background: #fff;
     border: 1px solid #dfe2e5;
-    padding: 4px;
+    padding: 2px 4px;
     border-radius: 4px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: absolute;
+    top: -32px;
+    left: 0;
+    z-index: 10;
+  }
+  /* 确保按钮可见 */
+  :global(milkdown-table-block .milkdown-table-block-toolbar button) {
+    background: #f5f5f5;
+    border: 1px solid #e0e0e0;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 14px;
+    color: #333;
+  }
+  :global(milkdown-table-block .milkdown-table-block-toolbar button:hover) {
+    background: #e0e0e0;
   }
 
   /* 强调 */
