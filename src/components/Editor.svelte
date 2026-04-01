@@ -5,6 +5,8 @@
   import { gfm } from '@milkdown/preset-gfm'
   import { history } from '@milkdown/plugin-history'
   import { listener, listenerCtx } from '@milkdown/plugin-listener'
+  import { math } from '@milkdown/plugin-math'
+  import 'katex/dist/katex.min.css'
 
   export let content = ''
   export let focusMode = false
@@ -32,6 +34,7 @@
         .use(commonmark)
         .use(gfm)          // GFM: tables, task lists, strikethrough
         .use(history)
+        .use(math)
         .create()
       console.log('[LightMark] 编辑器初始化完成')
       // 自动聚焦，让光标在编辑器就绪后立即显示
