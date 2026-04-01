@@ -21,7 +21,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run unit tests (116 cases)
         run: npm run test:unit
@@ -32,7 +32,7 @@ jobs:
         with:
           name: unit-test-results
           path: |
-            *.test.js
+            tests/*.test.js
           retention-days: 7
 
   # ==================== 第二层：组件测试 ====================
@@ -49,14 +49,14 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Install Vitest dependencies
-        run: npm install -D vitest @testing-library/svelte jsdom @vitest/coverage-v8 --save-dev
+        run: npm install -D vitest @testing-library/svelte jsdom @vitest/coverage-v8
       
       - name: Run component tests
         run: npm run test:component
-        continue-on-error: true  # 组件测试可能需要额外配置
+        continue-on-error: true
       
       - name: Upload component test results
         uses: actions/upload-artifact@v4
@@ -81,14 +81,14 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
       
       - name: Run E2E tests
         run: npm run test:e2e
-        continue-on-error: true  # E2E 测试可能需要开发服务器
+        continue-on-error: true
       
       - name: Upload E2E test results
         uses: actions/upload-artifact@v4
@@ -114,7 +114,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run build test
         run: npm run test:build
@@ -137,7 +137,7 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Run lint (if configured)
         run: npm run lint || echo "Lint not configured"
@@ -157,13 +157,13 @@ jobs:
           cache: 'npm'
       
       - name: Install dependencies
-        run: npm ci
+        run: npm install
       
       - name: Install coverage dependencies
-        run: npm install -D vitest @vitest/coverage-v8 --save-dev
+        run: npm install -D @vitest/coverage-v8
       
       - name: Generate coverage report
-        run: npm run test:coverage
+        run: npm run test:coverage || npm run test:unit -- --experimental-test-coverage
         continue-on-error: true
       
       - name: Upload coverage report
@@ -194,7 +194,7 @@ jobs:
           echo "| Build Test | ${{ needs.build-test.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Test Statistics" >> $GITHUB_STEP_SUMMARY
-          echo "- Total Test Files: 11" >> $GITHUB_STEP_SUMMARY
+          echo "- Total Test Files: 17" >> $GITHUB_STEP_SUMMARY
           echo "- Total Test Cases: 236+" >> $GITHUB_STEP_SUMMARY
           echo "- Unit Tests: 116 cases" >> $GITHUB_STEP_SUMMARY
           echo "- Component Tests: 80+ cases" >> $GITHUB_STEP_SUMMARY
