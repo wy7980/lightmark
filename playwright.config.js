@@ -52,10 +52,11 @@ export default defineConfig({
   ],
   
   // Web 服务器配置（自动启动开发服务器）
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
+  // 注释掉以避免 CI 环境超时 - GitHub Actions 会预先构建并部署
+  // webServer: {
+  //   command: 'npm run dev',
+  //   url: 'http://localhost:5173',
+  //   reuseExistingServer: !process.env.CI,
+  //   timeout: 120 * 1000,
+  // },
 })

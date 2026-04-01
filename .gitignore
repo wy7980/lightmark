@@ -26,3 +26,8 @@ npm-debug.log*
 # Tauri icons (keep these)
 !src-tauri/icons/*.icns
 !src-tauri/icons/*.ico
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/

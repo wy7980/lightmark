@@ -154,14 +154,30 @@ describe('EquationEditor 组件', () => {
   describe('公式验证', () => {
     it('应该验证括号匹配', () => {
       const validate = (latex) => {
-        const open = (latex.match(/\{/g) || []).length
-        const close = (latex.match(/\}/g) || []).length
-        return open === close
+        // 移除转义的大括号，然后统计未匹配的大括号
+        let balance = 0
+        let escaped = false
+        for (let i = 0; i < latex.length; i++) {
+          const char = latex[i]
+          if (escaped) {
+            escaped = false
+            continue
+          }
+          if (char === '\\') {
+            escaped = true
+            continue
+          }
+          if (char === '{') balance++
+          if (char === '}') balance--
+          if (balance < 0) return false // 闭合括号多于开放
+        }
+        return balance === 0
       }
       
       expect(validate('\\frac{1}{2}')).toBe(true)
-      expect(validate('\\frac{1}')).toBe(false)
-      expect(validate('\\frac{1}{2}}')).toBe(false)
+      expect(validate('\\frac{1}{2')).toBe(false)  // 缺少闭合括号
+      expect(validate('\\frac{1}{2}}')).toBe(false) // 多余闭合括号
+      expect(validate('\\frac{1}{2}')).toBe(true)   // 完整匹配
     })
 
     it('应该验证常见命令', () => {
@@ -170,7 +186,7 @@ describe('EquationEditor 组件', () => {
     })
 
     it('应该拒绝空公式', () => {
-      const validate = (latex) => latex && latex.trim().length > 0
+      const validate = (latex) => !!(latex && latex.trim().length > 0)
       expect(validate('')).toBe(false)
       expect(validate('   ')).toBe(false)
       expect(validate('E=mc^2')).toBe(true)
