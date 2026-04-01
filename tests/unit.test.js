@@ -7,8 +7,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert'
 
-// 测试大纲导航解析
-//'Outline: 解析 Markdown 标题', () => {
+// ==================== 大纲导航解析测试 ====================
+test('Outline: 解析 Markdown 标题', () => {
   function parseHeadings(md) {
     const lines = md.split('\n')
     const result = []
@@ -39,8 +39,8 @@ import assert from 'node:assert'
   assert.strictEqual(headings[2].level, 3)
 })
 
-// 测试任务列表生成
-//'TaskList: 生成 GitHub 风格任务列表', () => {
+// ==================== 任务列表生成测试 ====================
+test('TaskList: 生成 GitHub 风格任务列表', () => {
   function generateTaskMarkdown(tasks) {
     return '\n' + tasks.map(t => 
       `- [${t.checked ? 'x' : ' '}] ${t.text}`
@@ -57,8 +57,8 @@ import assert from 'node:assert'
   assert.ok(md.includes('- [x] 任务 2'))
 })
 
-// 测试表格 Markdown 生成
-//'TableEditor: 生成 Markdown 表格', () => {
+// ==================== 表格 Markdown 生成测试 ====================
+test('TableEditor: 生成 Markdown 表格', () => {
   function generateTableMarkdown(headers, rows, align) {
     let md = '\n'
     md += '| ' + headers.join(' | ') + ' |\n'
@@ -84,8 +84,8 @@ import assert from 'node:assert'
   assert.ok(md.includes('| 张三 | 25 |'))
 })
 
-// 测试图片 Markdown 生成
-//'ImageDrop: 生成图片 Markdown 语法', () => {
+// ==================== 图片 Markdown 生成测试 ====================
+test('ImageDrop: 生成图片 Markdown 语法', () => {
   function generateImageMarkdown(alt, src) {
     return `\n![${alt}](${src})\n`
   }
@@ -95,8 +95,8 @@ import assert from 'node:assert'
   assert.ok(md.startsWith('\n!['))
 })
 
-// 测试数学公式生成
-//'EquationEditor: 生成 LaTeX 公式', () => {
+// ==================== 数学公式生成测试 ====================
+test('EquationEditor: 生成 LaTeX 公式', () => {
   function generateEquationMarkdown(latex, type) {
     return type === 'inline' ? `$${latex}$` : `$$${latex}$$`
   }
@@ -108,8 +108,8 @@ import assert from 'node:assert'
   assert.strictEqual(block, '$$\\sum_{i=1}^{n}$$')
 })
 
-// 测试主题切换
-//'ThemeSwitcher: 主题类名生成', () => {
+// ==================== 主题切换测试 ====================
+test('ThemeSwitcher: 主题类名生成', () => {
   function getThemeClass(theme) {
     return `${theme}-theme`
   }
@@ -118,8 +118,8 @@ import assert from 'node:assert'
   assert.strictEqual(getThemeClass('dark'), 'dark-theme')
 })
 
-// 测试代码块语言检测
-//'CodeBlock: 自动检测语言', () => {
+// ==================== 代码块语言检测测试 ====================
+test('CodeBlock: 自动检测语言', () => {
   function detectLanguage(code) {
     const match = code.match(/^```(\w+)/)
     return match ? match[1] : 'plaintext'
@@ -130,8 +130,8 @@ import assert from 'node:assert'
   assert.strictEqual(detectLanguage('plain text'), 'plaintext')
 })
 
-// 测试防抖函数
-//'Utils: 防抖函数', async () => {
+// ==================== 防抖函数测试 ====================
+test('Utils: 防抖函数', async () => {
   let callCount = 0
   const debounce = (fn, delay) => {
     let timeout
@@ -153,46 +153,34 @@ import assert from 'node:assert'
   assert.strictEqual(callCount, 1)
 })
 
-// 测试语法高亮组件
-//'SyntaxHighlighter: 支持的语言列表', () => {
+// ==================== 支持的语言列表测试 ====================
+test('SyntaxHighlighter: 支持的语言列表', () => {
   const supportedLanguages = [
     'javascript', 'typescript', 'python', 'java', 'cpp', 'c',
     'go', 'rust', 'ruby', 'php', 'swift', 'kotlin',
     'html', 'css', 'sql', 'bash', 'json', 'yaml', 'markdown'
-  ];
+  ]
   
-  assert.ok(supportedLanguages.includes('javascript'));
-  assert.ok(supportedLanguages.includes('python'));
-  assert.ok(supportedLanguages.includes('typescript'));
-  assert.strictEqual(supportedLanguages.length, 19);
+  assert.ok(supportedLanguages.includes('javascript'))
+  assert.ok(supportedLanguages.includes('python'))
+  assert.ok(supportedLanguages.includes('typescript'))
+  assert.strictEqual(supportedLanguages.length, 19)
+})
 
-  it('代码折叠 组件应该存在', () => {
-    assert.ok(true, '代码折叠 组件已创建');
-  
-  it('一键复制 组件应该存在', () => {
-    assert.ok(true, '一键复制 组件已创建');
-  
-  it('语言选择器 组件应该存在', () => {
-    assert.ok(true, '语言选择器 组件已创建');
-  });
-});
-});
-});
-
-// 测试阅读进度计算
-//'ReadingProgress: 进度百分比计算', () => {
+// ==================== 阅读进度计算测试 ====================
+test('ReadingProgress: 进度百分比计算', () => {
   function calculateProgress(scrollTop, scrollHeight, clientHeight) {
-    const maxScroll = scrollHeight - clientHeight;
-    return maxScroll > 0 ? (scrollTop / maxScroll) * 100 : 0;
+    const maxScroll = scrollHeight - clientHeight
+    return maxScroll > 0 ? (scrollTop / maxScroll) * 100 : 0
   }
   
-  assert.strictEqual(calculateProgress(0, 1000, 500), 0);
-  assert.strictEqual(calculateProgress(250, 1000, 500), 50);
-  assert.strictEqual(calculateProgress(500, 1000, 500), 100);
-});
+  assert.strictEqual(calculateProgress(0, 1000, 500), 0)
+  assert.strictEqual(calculateProgress(250, 1000, 500), 50)
+  assert.strictEqual(calculateProgress(500, 1000, 500), 100)
+})
 
-// 测试点击跳转 - 标题缩进
-//'ClickJump: 标题层级缩进计算', () => {
+// ==================== 标题层级缩进测试 ====================
+test('ClickJump: 标题层级缩进计算', () => {
   function getHeadingIndent(level) {
     const indentMap = {
       1: '0px',
@@ -201,18 +189,18 @@ import assert from 'node:assert'
       4: '36px',
       5: '48px',
       6: '60px',
-    };
-    return indentMap[level] || '0px';
+    }
+    return indentMap[level] || '0px'
   }
   
-  assert.strictEqual(getHeadingIndent(1), '0px');
-  assert.strictEqual(getHeadingIndent(2), '12px');
-  assert.strictEqual(getHeadingIndent(3), '24px');
-  assert.strictEqual(getHeadingIndent(6), '60px');
-});
+  assert.strictEqual(getHeadingIndent(1), '0px')
+  assert.strictEqual(getHeadingIndent(2), '12px')
+  assert.strictEqual(getHeadingIndent(3), '24px')
+  assert.strictEqual(getHeadingIndent(6), '60px')
+})
 
-// 测试语法高亮 - 语言显示名称
-//'SyntaxHighlighter: 语言显示名称映射', () => {
+// ==================== 语言显示名称映射测试 ====================
+test('SyntaxHighlighter: 语言显示名称映射', () => {
   const displayNames = {
     'javascript': 'JavaScript',
     'typescript': 'TypeScript',
@@ -220,80 +208,68 @@ import assert from 'node:assert'
     'java': 'Java',
     'html': 'HTML',
     'css': 'CSS',
-  };
+  }
   
-  assert.strictEqual(displayNames['javascript'], 'JavaScript');
-  assert.strictEqual(displayNames['typescript'], 'TypeScript');
-  assert.strictEqual(displayNames['python'], 'Python');
-});
+  assert.strictEqual(displayNames['javascript'], 'JavaScript')
+  assert.strictEqual(displayNames['typescript'], 'TypeScript')
+  assert.strictEqual(displayNames['python'], 'Python')
+})
 
-// 测试代码折叠 - 行数计算
-//'CodeFolding: 代码行数统计', () => {
+// ==================== 代码行数统计测试 ====================
+test('CodeFolding: 代码行数统计', () => {
   function countLines(code) {
-    return code.split('\n').length;
+    return code.split('\n').length
   }
   
-  const code1 = 'line1\nline2\nline3';
-  const code2 = 'single line';
-  const code3 = 'line1\nline2\nline3\nline4\nline5';
+  const code1 = 'line1\nline2\nline3'
+  const code2 = 'single line'
+  const code3 = 'line1\nline2\nline3\nline4\nline5'
   
-  assert.strictEqual(countLines(code1), 3);
-  assert.strictEqual(countLines(code2), 1);
-  assert.strictEqual(countLines(code3), 5);
-});
+  assert.strictEqual(countLines(code1), 3)
+  assert.strictEqual(countLines(code2), 1)
+  assert.strictEqual(countLines(code3), 5)
+})
 
-// 测试语法高亮 - 支持的语言（修复之前的测试）
-//'SyntaxHighlighter: 支持的语言列表', () => {
-  const supportedLanguages = [
-    'javascript', 'typescript', 'python', 'java', 'cpp',
-    'html', 'css', 'sql', 'bash', 'json'
-  ];
-  
-  assert.ok(supportedLanguages.includes('javascript'));
-  assert.ok(supportedLanguages.includes('python'));
-  assert.strictEqual(supportedLanguages.length, 10);
-});
-
-// 测试代码折叠 - 折叠判断
-//'CodeFolding: 是否可折叠判断', () => {
+// ==================== 代码折叠判断测试 ====================
+test('CodeFolding: 是否可折叠判断', () => {
   function canCollapse(lineCount, maxLines = 20, allowCollapse = true) {
-    return allowCollapse && lineCount > maxLines;
+    return allowCollapse && lineCount > maxLines
   }
   
-  assert.strictEqual(canCollapse(10), false);  // 少于 20 行，不可折叠
-  assert.strictEqual(canCollapse(20), false);  // 等于 20 行，不可折叠
-  assert.strictEqual(canCollapse(21), true);   // 超过 20 行，可折叠
-  assert.strictEqual(canCollapse(30, 10), true); // 超过 10 行，可折叠
-  assert.strictEqual(canCollapse(30, 10, false), false); // 不允许折叠
-});
+  assert.strictEqual(canCollapse(10), false)
+  assert.strictEqual(canCollapse(20), false)
+  assert.strictEqual(canCollapse(21), true)
+  assert.strictEqual(canCollapse(30, 10), true)
+  assert.strictEqual(canCollapse(30, 10, false), false)
+})
 
-// 测试代码折叠 - 预览行数
-//'CodeFolding: 折叠时预览行数', () => {
+// ==================== 折叠预览行数测试 ====================
+test('CodeFolding: 折叠时预览行数', () => {
   function getPreviewLines(code, previewCount = 3) {
-    const lines = code.split('\n');
-    return lines.slice(0, previewCount).join('\n');
+    const lines = code.split('\n')
+    return lines.slice(0, previewCount).join('\n')
   }
   
-  const code = 'line1\nline2\nline3\nline4\nline5';
-  const preview = getPreviewLines(code);
+  const code = 'line1\nline2\nline3\nline4\nline5'
+  const preview = getPreviewLines(code)
   
-  assert.strictEqual(preview.split('\n').length, 3);
-  assert.strictEqual(preview, 'line1\nline2\nline3');
-});
+  assert.strictEqual(preview.split('\n').length, 3)
+  assert.strictEqual(preview, 'line1\nline2\nline3')
+})
 
-// 测试代码折叠 - 折叠摘要
-//'CodeFolding: 折叠摘要信息', () => {
+// ==================== 折叠摘要测试 ====================
+test('CodeFolding: 折叠摘要信息', () => {
   function getCollapsedSummary(totalLines, previewLines = 3) {
-    const hiddenLines = totalLines - previewLines;
-    return `... 折叠了 ${hiddenLines} 行代码 ...`;
+    const hiddenLines = totalLines - previewLines
+    return `... 折叠了 ${hiddenLines} 行代码 ...`
   }
   
-  assert.strictEqual(getCollapsedSummary(50), '... 折叠了 47 行代码 ...');
-  assert.strictEqual(getCollapsedSummary(100), '... 折叠了 97 行代码 ...');
-});
+  assert.strictEqual(getCollapsedSummary(50), '... 折叠了 47 行代码 ...')
+  assert.strictEqual(getCollapsedSummary(100), '... 折叠了 97 行代码 ...')
+})
 
-// 测试代码折叠 - 语言图标映射
-//'CodeFolding: 语言图标映射', () => {
+// ==================== 语言图标映射测试 ====================
+test('CodeFolding: 语言图标映射', () => {
   const icons = {
     'javascript': '🟨',
     'typescript': '🔷',
@@ -305,78 +281,78 @@ import assert from 'node:assert'
     'sql': '🗄️',
     'bash': '💻',
     'json': '📋',
-  };
-  
-  assert.strictEqual(icons['javascript'], '🟨');
-  assert.strictEqual(icons['typescript'], '🔷');
-  assert.strictEqual(icons['python'], '🐍');
-  assert.strictEqual(icons['html'], '🌐');
-});
-
-// 测试一键复制 - 文本复制功能
-//'CopyButton: 剪贴板复制逻辑', () => {
-  let copiedText = '';
-  
-  async function copyToClipboard(text) {
-    copiedText = text;
-    return true;
   }
   
-  assert.strictEqual(copiedText, '');
-  copyToClipboard('测试文本');
-  assert.strictEqual(copiedText, '测试文本');
-});
+  assert.strictEqual(icons['javascript'], '🟨')
+  assert.strictEqual(icons['typescript'], '🔷')
+  assert.strictEqual(icons['python'], '🐍')
+  assert.strictEqual(icons['html'], '🌐')
+})
 
-// 测试语言选择器 - 语言列表
-//'LanguageSelector: 支持的语言数量', () => {
+// ==================== 剪贴板复制测试 ====================
+test('CopyButton: 剪贴板复制逻辑', async () => {
+  let copiedText = ''
+  
+  async function copyToClipboard(text) {
+    copiedText = text
+    return true
+  }
+  
+  assert.strictEqual(copiedText, '')
+  await copyToClipboard('测试文本')
+  assert.strictEqual(copiedText, '测试文本')
+})
+
+// ==================== 语言列表测试 ====================
+test('LanguageSelector: 支持的语言数量', () => {
   const languages = [
     'javascript', 'typescript', 'python', 'java', 'cpp',
     'go', 'rust', 'ruby', 'php', 'swift',
-  ];
+  ]
   
-  assert.strictEqual(languages.length, 10);
-  assert.ok(languages.includes('javascript'));
-  assert.ok(languages.includes('python'));
-});
+  assert.strictEqual(languages.length, 10)
+  assert.ok(languages.includes('javascript'))
+  assert.ok(languages.includes('python'))
+})
 
-// 测试内联预览 - Markdown 渲染
-//'InlinePreview: Markdown 内联语法渲染', () => {
+// ==================== 内联预览渲染测试 ====================
+test('InlinePreview: Markdown 内联语法渲染', () => {
   function renderInline(text) {
-    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
-    text = text.replace(/`(.+?)`/g, '<code>$1</code>');
-    return text;
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    text = text.replace(/\*(.+?)\*/g, '<em>$1</em>')
+    text = text.replace(/`(.+?)`/g, '<code>$1</code>')
+    return text
   }
   
-  assert.ok(renderInline('**粗体**').includes('<strong>粗体</strong>'));
-  assert.ok(renderInline('*斜体*').includes('<em>斜体</em>'));
-  assert.ok(renderInline('`代码`').includes('<code>代码</code>'));
-});
+  assert.ok(renderInline('**粗体**').includes('<strong>粗体</strong>'))
+  assert.ok(renderInline('*斜体*').includes('<em>斜体</em>'))
+  assert.ok(renderInline('`代码`').includes('<code>代码</code>'))
+})
 
-// 测试焦点模式 - 切换状态
-//'FocusMode: 焦点模式切换', () => {
-  let enabled = false;
+// ==================== 焦点模式切换测试 ====================
+test('FocusMode: 焦点模式切换', () => {
+  let enabled = false
   
   function toggleFocus() {
-    enabled = !enabled;
+    enabled = !enabled
   }
   
-  toggleFocus();
-  assert.strictEqual(enabled, true);
+  toggleFocus()
+  assert.strictEqual(enabled, true)
   
-  toggleFocus();
-  assert.strictEqual(enabled, false);
-});
+  toggleFocus()
+  assert.strictEqual(enabled, false)
+})
 
-// 测试打字机模式 - 光标位置计算
-//'TypewriterMode: 光标居中位置计算', () => {
+// ==================== 打字机模式光标位置测试 ====================
+test('TypewriterMode: 光标居中位置计算', () => {
   function calculateCenterOffset(containerHeight, elementHeight) {
-    return containerHeight / 2 - elementHeight / 2;
+    return containerHeight / 2 - elementHeight / 2
   }
   
-  assert.strictEqual(calculateCenterOffset(600, 20), 290);
-  assert.strictEqual(calculateCenterOffset(800, 30), 385);
-  assert.strictEqual(calculateCenterOffset(500, 25), 237.5);
-});
+  assert.strictEqual(calculateCenterOffset(600, 20), 290)
+  assert.strictEqual(calculateCenterOffset(800, 30), 385)
+  assert.strictEqual(calculateCenterOffset(500, 25), 237.5)
+})
 
-console.log('\n✅ 所有单元测试通过！\n');
+console.log('\n✅ 所有单元测试通过！\n')

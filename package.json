@@ -12,8 +12,13 @@
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "test": "node --test tests/*.test.js",
-    "test:unit": "node --test tests/unit.test.js",
-    "test:build": "node tests/build.test.js"
+    "test:unit": "node --test tests/unit.test.js tests/editor-config.test.js tests/component-boundary.test.js",
+    "test:build": "node tests/build.test.js",
+    "test:component": "vitest run tests/components/",
+    "test:e2e": "playwright test tests/e2e/",
+    "test:all": "npm run test:unit && npm run test:component && npm run test:e2e",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.1",
