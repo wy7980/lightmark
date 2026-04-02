@@ -113,8 +113,11 @@
   ${html}
 </body>
 </html>`
+    } catch (error) {
+      console.error('[ExportDialog] 生成 HTML 失败:', error)
+      return '<p>生成文档时发生错误</p>'
+    }
   }
-  
   function exportContent() {
     const sampleMd = `# LightMark 导出示例
 
