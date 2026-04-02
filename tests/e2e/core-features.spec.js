@@ -39,6 +39,68 @@ test.describe('LightMark 核心功能 E2E', () => {
       const editor = page.locator('.ProseMirror')
       await expect(editor).toBeVisible()
     })
+
+    test('空文档时编辑器高度应该正常', async ({ page }) => {
+      await page.goto('/')
+      await page.waitForTimeout(1000) // 等待渲染
+      
+      // 验证编辑器容器高度
+      const container = page.locator('.editor-container')
+      const containerBox = await container.boundingBox()
+      const viewportHeight = (await page.viewportSize()).height
+      
+      // 容器高度应该至少占据视口的 60%
+      expect(containerBox.height).toBeGreaterThan(viewportHeight * 0.6)
+      
+      // 验证编辑器主体高度
+      const editor = page.locator('.ProseMirror')
+      const editorBox = await editor.boundingBox()
+      
+      // 编辑器高度应该至少 400px（保证可点击区域）
+      expect(editorBox.height).toBeGreaterThan(400)
+    })
+
+    test('空文档时整个区域应该可点击', async ({ page }) => {
+      await page.goto('/')
+      await page.waitForTimeout(500)
+      
+      const editor = page.locator('.ProseMirror')
+      
+      // 点击编辑器中心区域
+      const box = await editor.boundingBox()
+      const centerX = box.x + box.width / 2
+      const centerY = box.y + box.height / 2
+      
+      await page.mouse.click(centerX, centerY)
+      
+      // 编辑器应该获得焦点
+      await expect(editor).toBeFocused()
+    })
+
+    test('编辑器不应该出现高度塌陷', async ({ page }) => {
+      await page.setViewportSize({ width: 1920, height: 1080 })
+      await page.goto('/')
+      await page.waitForTimeout(1000)
+      
+      // 获取各个关键元素的高度
+      const container = page.locator('.editor-container')
+      const editor = page.locator('.ProseMirror')
+      const milkdown = page.locator('.milkdown')
+      
+      const containerHeight = (await container.boundingBox()).height
+      const editorHeight = (await editor.boundingBox()).height
+      const milkdownHeight = (await milkdown.boundingBox()).height
+      
+      // 所有元素都应该有合理高度
+      expect(containerHeight).toBeGreaterThan(500)
+      expect(editorHeight).toBeGreaterThan(500)
+      expect(milkdownHeight).toBeGreaterThan(500)
+      
+      // 不应该只有 1 行高度（约 20-30px）
+      expect(containerHeight).toBeGreaterThan(100)
+      expect(editorHeight).toBeGreaterThan(100)
+      expect(milkdownHeight).toBeGreaterThan(100)
+    })
   })
 
   // ==================== 表格功能测试 ====================
