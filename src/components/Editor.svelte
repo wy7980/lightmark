@@ -63,15 +63,19 @@
         .use(tableBlock)
         .config(ctx => {
           // 配置 math 插件以防止 KaTeX 解析错误导致编辑器崩溃
-          import('@milkdown/plugin-math').then(({ mathConfig }) => {
-            ctx.update(mathConfig.key, (prev) => ({
+          // 必须同步配置，确保在编辑器创建前就设置好
+          try {
+            ctx.update('mathConfig' as any, (prev: any) => ({
               ...prev,
               katexOptions: {
                 ...(prev?.katexOptions || {}),
                 throwOnError: false,
+                errorColor: '#cc0000',
               }
             }))
-          }).catch(() => {})
+          } catch (e) {
+            console.warn('[LightMark] mathConfig 更新失败:', e)
+          }
         })
         .create()
       console.log('[LightMark] 编辑器初始化完成')

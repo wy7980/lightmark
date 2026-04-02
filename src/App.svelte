@@ -48,6 +48,41 @@
   let sidebarOpen = true
   let theme: 'light' | 'dark' = 'light'
   let focusMode = false
+
+  /**
+   * 清理有问题的公式语法，防止 KaTeX 解析错误
+   * 问题示例：$$$$ 或 $...$$...$ 等无效分隔符
+   */
+  function sanitizeFormulas(text: string): string {
+    if (!text) return text
+    
+    let sanitized = text
+    
+    // 修复 1: 将连续的 $$$$ 替换为 $$ （块级公式）
+    sanitized = sanitized.replace(/\$\$\$\$/g, '$$')
+    
+    // 修复 2: 将 $...$...$ 这种模式修复为 $...$
+    // 检测单个 $ 后面跟着另一个 $ 但没有闭合的情况
+    sanitized = sanitized.replace(/\$([^\$]+)\$\$([^\$]+)\$/g, '$$$1$$$$$$2$$')
+    
+    // 修复 3: 确保 \_ 不会被错误转义（Windows 路径常见）
+    sanitized = sanitized.replace(/\\_/g, '_')
+    
+    // 修复 4: 处理行内公式中的多余 $ 符号
+    // 匹配 $...$...$ 模式（奇数个 $）
+    const inlineMatches = sanitized.match(/\$[^$]+\$/g)
+    if (inlineMatches) {
+      inlineMatches.forEach(match => {
+        // 如果公式内部包含 \$，可能是转义问题
+        if (match.includes('\\$')) {
+          const fixed = match.replace(/\\\$/g, '$')
+          sanitized = sanitized.replace(match, fixed)
+        }
+      })
+    }
+    
+    return sanitized
+  }
   let typewriterMode = false
   let fileLoadKey = 0  // 用于在打开新文件时强制重建编辑器
   let editorRef: any  // Editor 组件实例，用于调用 insertMarkdown()
@@ -150,9 +185,18 @@
       console.log('[LightMark] 已选择文件:', selectedPath)
       const result = await invoke<FileResponse>('open_file', { path: selectedPath })
       filePath = result.path
-      content = result.content
+      
+      // 清理有问题的公式语法，防止 KaTeX 解析错误
+      const rawContent = result.content
+      content = sanitizeFormulas(rawContent)
+      
+      // 如果清理后内容不同，提示用户
+      if (content !== rawContent) {
+        console.warn('[LightMark] 检测到并修复了公式语法问题')
+      }
+      
       fileLoadKey++  // 触发编辑器重建以加载新内容
-      handleContentChange(result.content)
+      handleContentChange(content)
       console.log('[LightMark] 文件已读取:', result.path)
     } catch (err) {
       console.error('[LightMark] 打开文件失败:', err)
