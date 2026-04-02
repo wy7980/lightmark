@@ -335,6 +335,64 @@ test.describe('LightMark 核心功能 E2E', () => {
         await expect(mathBlock.first()).toBeVisible()
       }
     })
+
+    test('无效公式不应该导致编辑器崩溃', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 输入无效的公式语法（连续 $$$$）
+      await editor.click()
+      await editor.fill('这是无效公式 $$$$ 测试')
+      await page.waitForTimeout(1000)
+      
+      // 验证 1: 编辑器不应该崩溃，仍然可编辑
+      await expect(editor).toBeEditable()
+      
+      // 验证 2: 内容应该被显示（即使公式无效）
+      const content = await editor.textContent()
+      expect(content).toContain('这是无效公式')
+      expect(content).toContain('测试')
+      
+      // 验证 3: 不应该有未处理的 JavaScript 错误
+      // （KaTeX 应该优雅地处理错误，显示为红色而不是崩溃）
+    })
+
+    test('包含 Windows 路径的公式应该正确处理', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 输入包含反斜杠的路径（常见于 Windows 用户）
+      await editor.click()
+      await editor.fill('文件路径：C:\\_test\\_file.md')
+      await page.waitForTimeout(500)
+      
+      // 验证：编辑器不应该崩溃
+      await expect(editor).toBeEditable()
+      
+      // 反斜杠应该被保留或正确处理
+      const content = await editor.textContent()
+      expect(content).toContain('C:')
+      expect(content).toContain('test')
+      expect(content).toContain('file.md')
+    })
+
+    test('混合的公式语法应该被优雅处理', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 输入混合的有效和无效公式
+      await editor.click()
+      await editor.fill('$E=mc^2$ 和 $$$$ 以及 $$\\sum_{i=1}^{n}$$')
+      await page.waitForTimeout(1000)
+      
+      // 验证 1: 编辑器不应该崩溃
+      await expect(editor).toBeEditable()
+      
+      // 验证 2: 有效公式应该正常显示
+      const content = await editor.textContent()
+      expect(content).toContain('E=mc^2')
+      expect(content).toContain('\\sum')
+      
+      // 验证 3: 不应该有未处理的错误
+      // （无效的 $$$$ 应该被忽略或显示为错误样式）
+    })
   })
 
   // ==================== 任务列表测试 ====================

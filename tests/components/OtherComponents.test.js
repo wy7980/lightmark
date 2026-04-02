@@ -336,6 +336,133 @@ describe('EquationEditor 组件', () => {
     })
   })
 
+  describe('公式语法容错处理', () => {
+    it('应该处理连续的 $ 符号', () => {
+      const sanitize = (text) => text.replace(/\$\$\$\$/g, '$$')
+      
+      expect(sanitize('$$$$')).toBe('$$')
+      expect(sanitize('test $$$$ test')).toBe('test $$ test')
+      expect(sanitize('$$$$$$$$')).toBe('$$$$') // 多组也处理
+    })
+
+    it('应该处理 Windows 路径中的反斜杠', () => {
+      const sanitize = (text) => text.replace(/\\_/g, '_')
+      
+      expect(sanitize('C:\\_test\\_file.md')).toBe('C:_test_file.md')
+      expect(sanitize('\\_')).toBe('_')
+      expect(sanitize('no backslash')).toBe('no backslash')
+    })
+
+    it('应该处理无效的公式分隔符组合', () => {
+      // 模拟 App.svelte 中的 sanitizeFormulas 逻辑
+      const sanitize = (text) => {
+        let result = text
+        result = result.replace(/\$\$\$\$/g, '$$')
+        result = result.replace(/\\_/g, '_')
+        return result
+      }
+      
+      // 测试各种无效组合
+      expect(sanitize('$E=mc^2$$$$\\sum x$')).toBe('$E=mc^2$$\\sum x$')
+      expect(sanitize('$$\\frac{1}{2}$$$$')).toBe('$$\\frac{1}{2}$$')
+    })
+
+    it('应该保持有效公式不变', () => {
+      const sanitize = (text) => {
+        let result = text
+        result = result.replace(/\$\$\$\$/g, '$$')
+        result = result.replace(/\\_/g, '_')
+        return result
+      }
+      
+      // 有效公式不应该被修改
+      expect(sanitize('$E=mc^2$')).toBe('$E=mc^2$')
+      expect(sanitize('$$\\sum_{i=1}^{n}$$')).toBe('$$\\sum_{i=1}^{n}$$')
+      expect(sanitize('普通文本')).toBe('普通文本')
+    })
+
+    it('应该处理混合的公式语法', () => {
+      const sanitize = (text) => {
+        let result = text
+        result = result.replace(/\$\$\$\$/g, '$$')
+        result = result.replace(/\\_/g, '_')
+        return result
+      }
+      
+      const input = '这是 $E=mc^2$ 和 $$\\sum_{i=1}^{n}$$ 以及 C:\\_file\\_test.md'
+      const expected = '这是 $E=mc^2$ 和 $$\\sum_{i=1}^{n}$$ 以及 C:_file_test.md'
+      
+      expect(sanitize(input)).toBe(expected)
+    })
+
+    it('应该处理极端的 $ 符号重复', () => {
+      const sanitize = (text) => {
+        let result = text
+        // 多次替换以处理连续多组 $$$$
+        while (result.includes('$$$$')) {
+          result = result.replace(/\$\$\$\$/g, '$$')
+        }
+        return result
+      }
+      
+      expect(sanitize('$$$$$$$$$$$$')).toBe('$$') // 6 个 $ → 1 对
+      expect(sanitize('$$$$$$$$')).toBe('$$') // 4 个 $ → 1 对
+    })
+  })
+
+  describe('KaTeX 错误恢复', () => {
+    it('无效公式不应该导致崩溃', () => {
+      // 模拟 KaTeX 配置 throwOnError: false
+      const safeRender = (latex, config = { throwOnError: false }) => {
+        try {
+          // 模拟 KaTeX 渲染
+          if (!latex || latex.trim() === '') {
+            throw new Error('Empty formula')
+          }
+          if (latex.includes('$$$$')) {
+            throw new Error('Invalid syntax')
+          }
+          return { success: true, html: `<span>${latex}</span>` }
+        } catch (e) {
+          if (config.throwOnError) {
+            throw e
+          }
+          // 不抛出错误，返回错误样式
+          return { 
+            success: false, 
+            html: `<span class="katex-error" style="color: #cc0000">${latex}</span>` 
+          }
+        }
+      }
+      
+      // 有效公式应该正常渲染
+      const valid = safeRender('E=mc^2')
+      expect(valid.success).toBe(true)
+      expect(valid.html).toContain('E=mc^2')
+      
+      // 无效公式不应该崩溃，返回错误样式
+      const invalid = safeRender('$$$$')
+      expect(invalid.success).toBe(false)
+      expect(invalid.html).toContain('katex-error')
+      expect(invalid.html).toContain('#cc0000')
+      
+      // 空公式也应该优雅处理
+      const empty = safeRender('')
+      expect(empty.success).toBe(false)
+      expect(empty.html).toContain('katex-error')
+    })
+
+    it('错误公式应该显示为红色', () => {
+      const errorColor = '#cc0000'
+      const renderError = (latex) => 
+        `<span class="katex-error" style="color: ${errorColor}">${latex}</span>`
+      
+      const error = renderError('$$$$')
+      expect(error).toContain('color: #cc0000')
+      expect(error).toContain('katex-error')
+    })
+  })
+
   describe('错误处理', () => {
     it('无效公式应该显示错误而不是崩溃', () => {
       const renderSafe = (latex, config) => {

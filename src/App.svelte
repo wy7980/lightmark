@@ -58,28 +58,13 @@
     
     let sanitized = text
     
-    // 修复 1: 将连续的 $$$$ 替换为 $$ （块级公式）
-    sanitized = sanitized.replace(/\$\$\$\$/g, '$$')
-    
-    // 修复 2: 将 $...$...$ 这种模式修复为 $...$
-    // 检测单个 $ 后面跟着另一个 $ 但没有闭合的情况
-    sanitized = sanitized.replace(/\$([^\$]+)\$\$([^\$]+)\$/g, '$$$1$$$$$$2$$')
-    
-    // 修复 3: 确保 \_ 不会被错误转义（Windows 路径常见）
-    sanitized = sanitized.replace(/\\_/g, '_')
-    
-    // 修复 4: 处理行内公式中的多余 $ 符号
-    // 匹配 $...$...$ 模式（奇数个 $）
-    const inlineMatches = sanitized.match(/\$[^$]+\$/g)
-    if (inlineMatches) {
-      inlineMatches.forEach(match => {
-        // 如果公式内部包含 \$，可能是转义问题
-        if (match.includes('\\$')) {
-          const fixed = match.replace(/\\\$/g, '$')
-          sanitized = sanitized.replace(match, fixed)
-        }
-      })
+    // 修复 1: 循环替换直到没有 $$$$ （处理极端情况如 $$$$$$）
+    while (sanitized.includes('$$$$')) {
+      sanitized = sanitized.replace(/\$\$\$\$/g, '$$')
     }
+    
+    // 修复 2: 确保 \_ 不会被错误转义（Windows 路径常见）
+    sanitized = sanitized.replace(/\\_/g, '_')
     
     return sanitized
   }
