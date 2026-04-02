@@ -1,9 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import Editor from './components/Editor.svelte'
+  import CrepeEditor from './components/CrepeEditor.svelte'
   import Toolbar from './components/Toolbar.svelte'
   import Sidebar from './components/Sidebar.svelte'
-  import ImageDrop from './components/ImageDrop.svelte'
   import TableEditor from './components/TableEditor.svelte'
   import TaskList from './components/TaskList.svelte'
   import EquationEditor from './components/EquationEditor.svelte'
@@ -315,20 +314,15 @@
       />
       
       <div class="editor-container">
-        <ImageDrop on:imageInsert={(e) => {
-          const md = `\n![${e.detail.alt}](${e.detail.src})\n`
-          editorRef?.insertMarkdown(md)
-        }}>
-          {#key fileLoadKey}
-          <Editor
+        {#key fileLoadKey}
+          <CrepeEditor
             bind:this={editorRef}
             content={content}
             focusMode={focusMode}
             typewriterMode={typewriterMode}
             on:change={(e) => handleContentChange(e.detail)}
           />
-          {/key}
-        </ImageDrop>
+        {/key}
       </div>
     </div>
     
