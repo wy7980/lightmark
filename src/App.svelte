@@ -241,10 +241,10 @@
     />
     
     {#if showTableEditor}
-      <div class="modal-overlay" on:click={() => showTableEditor = false}>
-        <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-overlay" on:click={() => showTableEditor = false} role="presentation">
+        <div class="modal-content" on:click|stopPropagation role="dialog" aria-modal="true" aria-labelledby="table-modal-title">
           <div class="modal-header">
-            <h2>📊 插入表格</h2>
+            <h2 id="table-modal-title">📊 插入表格</h2>
             <button class="close-btn" on:click={() => showTableEditor = false}>✕</button>
           </div>
           <TableEditor on:tableInsert={(e) => {
@@ -256,10 +256,10 @@
     {/if}
     
     {#if showTaskEditor}
-      <div class="modal-overlay" on:click={() => showTaskEditor = false}>
-        <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-overlay" on:click={() => showTaskEditor = false} role="presentation">
+        <div class="modal-content" on:click|stopPropagation role="dialog" aria-modal="true" aria-labelledby="task-modal-title">
           <div class="modal-header">
-            <h2>✅ 任务列表</h2>
+            <h2 id="task-modal-title">✅ 任务列表</h2>
             <button class="close-btn" on:click={() => showTaskEditor = false}>✕</button>
           </div>
           <TaskList on:taskInsert={(e) => {
@@ -271,10 +271,10 @@
     {/if}
     
     {#if showEquationEditor}
-      <div class="modal-overlay" on:click={() => showEquationEditor = false}>
-        <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-overlay" on:click={() => showEquationEditor = false} role="presentation">
+        <div class="modal-content" on:click|stopPropagation role="dialog" aria-modal="true" aria-labelledby="math-modal-title">
           <div class="modal-header">
-            <h2>∑ 数学公式</h2>
+            <h2 id="math-modal-title">∑ 数学公式</h2>
             <button class="close-btn" on:click={() => showEquationEditor = false}>✕</button>
           </div>
           <EquationEditor on:equationInsert={(e) => {
@@ -286,10 +286,10 @@
     {/if}
     
     {#if showExportDialog}
-      <div class="modal-overlay" on:click={() => showExportDialog = false}>
-        <div class="modal-content" on:click|stopPropagation>
+      <div class="modal-overlay" on:click={() => showExportDialog = false} role="presentation">
+        <div class="modal-content" on:click|stopPropagation role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
           <div class="modal-header">
-            <h2>📤 导出</h2>
+            <h2 id="export-modal-title">📤 导出</h2>
             <button class="close-btn" on:click={() => showExportDialog = false}>✕</button>
           </div>
           <ExportDialog on:exportHtml={(e) => {
@@ -458,7 +458,6 @@
     min-height: 0;  /* 关键：允许 flex 子项缩小 */
   }
   
-  .preview {
     flex: 1;
     padding: 20px;
     overflow-y: auto;
