@@ -100,10 +100,46 @@ test.describe('LightMark 核心功能 E2E', () => {
       const table = page.locator('table').first()
       await expect(table).toBeVisible()
       
-      // 验证表格内容
       const content = await editor.textContent()
       expect(content).toContain('列 1')
       expect(content).toContain('单元格 1')
+    })
+
+    test('应该支持多行多列表格', async ({ page }) => {
+      const editor = page.locator('.ProseMirror').first()
+      await editor.click()
+      
+      const tableMarkdown = '| 姓名 | 年龄 | 城市 |\n|------|------|------|\n| 张三 | 25 | 北京 |\n| 李四 | 30 | 上海 |\n| 王五 | 28 | 广州 |'
+      await editor.fill(tableMarkdown)
+      await page.waitForTimeout(1000)
+      
+      const table = page.locator('table').first()
+      await expect(table).toBeVisible()
+      
+      const content = await editor.textContent()
+      expect(content).toContain('张三')
+      expect(content).toContain('李四')
+      expect(content).toContain('王五')
+    })
+
+    test('应该支持在表格后继续编辑', async ({ page }) => {
+      const editor = page.locator('.ProseMirror').first()
+      await editor.click()
+      
+      // 先插入表格
+      const tableMarkdown = '| 列 1 | 列 2 |\n|------|------|\n| 单元格 1 | 单元格 2 |'
+      await editor.fill(tableMarkdown)
+      await page.waitForTimeout(500)
+      
+      // 在表格后继续输入
+      await editor.press('Enter')
+      await editor.press('Enter')
+      await editor.fill('这是表格后的内容')
+      await page.waitForTimeout(500)
+      
+      const content = await editor.textContent()
+      expect(content).toContain('单元格 1')
+      expect(content).toContain('这是表格后的内容')
     })
   })
 
@@ -129,13 +165,78 @@ test.describe('LightMark 核心功能 E2E', () => {
       expect(content).toContain('\\sum')
     })
 
+    test('应该支持复杂公式', async ({ page }) => {
+      const editor = page.locator('.ProseMirror').first()
+      await editor.click()
+      await editor.fill('$$\\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$')
+      await page.waitForTimeout(500)
+      
+      const content = await editor.textContent()
+      expect(content).toContain('\\frac')
+      expect(content).toContain('\\sqrt')
+    })
+
+    test('应该支持修改行内公式', async ({ page }) => {
+      const editor = page.locator('.ProseMirror').first()
+      await editor.click()
+      
+      // 先输入公式
+      await editor.fill('这是 $E=mc^2$ 公式')
+      await page.waitForTimeout(500)
+      
+      // 移动光标到公式末尾
+      for (let i = 0; i < 2; i++) {
+        await editor.press('ArrowLeft')
+      }
+      
+      // 修改公式
+      await editor.fill('3')
+      await page.waitForTimeout(500)
+      
+      const content = await editor.textContent()
+      expect(content).toContain('mc^3')
+    })
+
+    test('应该支持修改块级公式', async ({ page }) => {
+      const editor = page.locator('.ProseMirror').first()
+      await editor.click()
+      
+      // 先输入块级公式
+      await editor.fill('$$\\frac{1}{2}$$')
+      await page.waitForTimeout(500)
+      
+      // 在公式后继续输入
+      await editor.press('ArrowRight')
+      await editor.press('ArrowRight')
+      await editor.fill('\n\n这是公式后的说明')
+      await page.waitForTimeout(500)
+      
+      const content = await editor.textContent()
+      expect(content).toContain('\\frac')
+      expect(content).toContain('这是公式后的说明')
+    })
+
+    test('应该支持在公式间编辑', async ({ page }) => {
+      const editor = page.locator('.ProseMirror').first()
+      await editor.click()
+      
+      // 输入多个公式
+      await editor.fill('第一个公式 $a+b=c$\n\n第二个公式 $$\\sum_{i=1}^{n} i$$')
+      await page.waitForTimeout(500)
+      
+      const content = await editor.textContent()
+      expect(content).toContain('第一个公式')
+      expect(content).toContain('a+b=c')
+      expect(content).toContain('第二个公式')
+      expect(content).toContain('\\sum')
+    })
+
     test('无效公式不应该导致崩溃', async ({ page }) => {
       const editor = page.locator('.ProseMirror').first()
       await editor.click()
       await editor.fill('无效公式 $$$$ 测试')
       await page.waitForTimeout(500)
       
-      // 编辑器应该仍然可编辑
       await expect(editor).toBeEditable()
       
       const content = await editor.textContent()
