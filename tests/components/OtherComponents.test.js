@@ -341,14 +341,15 @@ describe('EquationEditor 组件', () => {
       const sanitize = (text) => {
         let result = text
         while (result.includes('$$$$')) {
-          result = result.replace(/\$\$\$\$/g, '$$')
+          // 注意：replace 中 $$ 表示一个字面的 $
+          result = result.replace(/\$\$\$\$/g, '$$$$')
         }
         return result
       }
       
       expect(sanitize('$$$$')).toBe('$$')
       expect(sanitize('test $$$$ test')).toBe('test $$ test')
-      expect(sanitize('$$$$$$$$')).toBe('$$') // 8 个$ → 2 次替换 → $$
+      expect(sanitize('$$$$$$$$')).toBe('$$')
     })
 
     it('应该处理 Windows 路径中的反斜杠', () => {
@@ -363,7 +364,7 @@ describe('EquationEditor 组件', () => {
       const sanitize = (text) => {
         let result = text
         while (result.includes('$$$$')) {
-          result = result.replace(/\$\$\$\$/g, '$$')
+          result = result.replace(/\$\$\$\$/g, '$$$$')
         }
         result = result.replace(/\\_/g, '_')
         return result
@@ -377,7 +378,7 @@ describe('EquationEditor 组件', () => {
       const sanitize = (text) => {
         let result = text
         while (result.includes('$$$$')) {
-          result = result.replace(/\$\$\$\$/g, '$$')
+          result = result.replace(/\$\$\$\$/g, '$$$$')
         }
         result = result.replace(/\\_/g, '_')
         return result
@@ -392,7 +393,7 @@ describe('EquationEditor 组件', () => {
       const sanitize = (text) => {
         let result = text
         while (result.includes('$$$$')) {
-          result = result.replace(/\$\$\$\$/g, '$$')
+          result = result.replace(/\$\$\$\$/g, '$$$$')
         }
         result = result.replace(/\\_/g, '_')
         return result
@@ -407,15 +408,15 @@ describe('EquationEditor 组件', () => {
     it('应该处理极端的 $ 符号重复', () => {
       const sanitize = (text) => {
         let result = text
-        // 多次替换以处理连续多组 $$$$
         while (result.includes('$$$$')) {
-          result = result.replace(/\$\$\$\$/g, '$$')
+          result = result.replace(/\$\$\$\$/g, '$$$$')
         }
         return result
       }
       
-      expect(sanitize('$$$$$$$$$$$$')).toBe('$$') // 6 个 $ → 1 对
-      expect(sanitize('$$$$$$$$')).toBe('$$') // 4 个 $ → 1 对
+      expect(sanitize('$$$$')).toBe('$$') // 4 个$ → $$
+      expect(sanitize('$$$$$$$$')).toBe('$$') // 8 个$ → $$
+      expect(sanitize('$$$$$$$$$$$$')).toBe('$$') // 10 个$ → $$ (8 个被替换，剩余 2 个)
     })
   })
 
