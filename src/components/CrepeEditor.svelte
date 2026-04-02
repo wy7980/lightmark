@@ -38,18 +38,17 @@
         },
         // 配置选项
         placeholder: '开始写作...',
-        theme: 'light',
       })
 
-      // 监听内容变化
+      // 创建编辑器后再监听内容变化
+      await editor.create()
+      
+      // 监听内容变化（必须在 create 之后）
       editor.listener.onMarkdownUpdated((ctx, markdown) => {
         if (isInitialized) {
           dispatch('change', markdown)
         }
       })
-
-      // 创建编辑器
-      await editor.create()
       
       isInitialized = true
       console.log('[LightMark] Crepe 编辑器初始化完成')
