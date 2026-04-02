@@ -52,11 +52,12 @@ export default defineConfig({
     // },
   ],
   
-  // Web 服务器配置
-  webServer: {
+  // Web 服务器配置（仅在本地开发时启用）
+  // CI 环境中由 GitHub Actions workflow 手动启动服务器
+  webServer: process.env.CI ? undefined : {
     command: 'npm run build:frontend && npx vite preview --port 5173',
     url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,  // 2 分钟启动超时
+    reuseExistingServer: false,
+    timeout: 120 * 1000,
   },
 })
