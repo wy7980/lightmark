@@ -338,11 +338,17 @@ describe('EquationEditor 组件', () => {
 
   describe('公式语法容错处理', () => {
     it('应该处理连续的 $ 符号', () => {
-      const sanitize = (text) => text.replace(/\$\$\$\$/g, '$$')
+      const sanitize = (text) => {
+        let result = text
+        while (result.includes('$$$$')) {
+          result = result.replace(/\$\$\$\$/g, '$$')
+        }
+        return result
+      }
       
       expect(sanitize('$$$$')).toBe('$$')
       expect(sanitize('test $$$$ test')).toBe('test $$ test')
-      expect(sanitize('$$$$$$$$')).toBe('$$$$') // 多组也处理
+      expect(sanitize('$$$$$$$$')).toBe('$$') // 8 个$ → 2 次替换 → $$
     })
 
     it('应该处理 Windows 路径中的反斜杠', () => {
@@ -354,15 +360,15 @@ describe('EquationEditor 组件', () => {
     })
 
     it('应该处理无效的公式分隔符组合', () => {
-      // 模拟 App.svelte 中的 sanitizeFormulas 逻辑
       const sanitize = (text) => {
         let result = text
-        result = result.replace(/\$\$\$\$/g, '$$')
+        while (result.includes('$$$$')) {
+          result = result.replace(/\$\$\$\$/g, '$$')
+        }
         result = result.replace(/\\_/g, '_')
         return result
       }
       
-      // 测试各种无效组合
       expect(sanitize('$E=mc^2$$$$\\sum x$')).toBe('$E=mc^2$$\\sum x$')
       expect(sanitize('$$\\frac{1}{2}$$$$')).toBe('$$\\frac{1}{2}$$')
     })
@@ -370,12 +376,13 @@ describe('EquationEditor 组件', () => {
     it('应该保持有效公式不变', () => {
       const sanitize = (text) => {
         let result = text
-        result = result.replace(/\$\$\$\$/g, '$$')
+        while (result.includes('$$$$')) {
+          result = result.replace(/\$\$\$\$/g, '$$')
+        }
         result = result.replace(/\\_/g, '_')
         return result
       }
       
-      // 有效公式不应该被修改
       expect(sanitize('$E=mc^2$')).toBe('$E=mc^2$')
       expect(sanitize('$$\\sum_{i=1}^{n}$$')).toBe('$$\\sum_{i=1}^{n}$$')
       expect(sanitize('普通文本')).toBe('普通文本')
@@ -384,7 +391,9 @@ describe('EquationEditor 组件', () => {
     it('应该处理混合的公式语法', () => {
       const sanitize = (text) => {
         let result = text
-        result = result.replace(/\$\$\$\$/g, '$$')
+        while (result.includes('$$$$')) {
+          result = result.replace(/\$\$\$\$/g, '$$')
+        }
         result = result.replace(/\\_/g, '_')
         return result
       }

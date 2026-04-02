@@ -374,14 +374,14 @@ describe('CrepeEditor 组件', () => {
 
   describe('性能测试', () => {
     it('大文档应该流畅编辑', () => {
-      const largeDoc = '# 大文档\n\n'.repeat(1000)
+      const largeDoc = '# 大文档\n\n'.repeat(2000)
       expect(largeDoc.length).toBeGreaterThan(10000)
       
       const startTime = Date.now()
       const processed = largeDoc.trim()
       const duration = Date.now() - startTime
       
-      expect(duration).toBeLessThan(100) // 应该在 100ms 内完成
+      expect(duration).toBeLessThan(100)
       expect(processed.length).toBeGreaterThan(0)
     })
 
