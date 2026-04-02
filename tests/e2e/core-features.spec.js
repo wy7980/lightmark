@@ -407,10 +407,9 @@ test.describe('LightMark 核心功能 E2E', () => {
       const table = page.locator('table').first()
       await expect(table).toBeVisible()
     })
-  })
 
     test('连续美元符号不应该导致编辑器崩溃', async ({ page }) => {
-      const editor = page.locator('.ProseMirror')
+      const editor = page.locator('.ProseMirror').first()
       
       // 输入无效的公式语法（连续 $$$$）
       await editor.click()
@@ -424,9 +423,7 @@ test.describe('LightMark 核心功能 E2E', () => {
       const content = await editor.textContent()
       expect(content).toContain('这是无效公式')
       expect(content).toContain('测试')
-      
-      // 验证 3: 不应该有未处理的 JavaScript 错误
-      // （KaTeX 应该优雅地处理错误，显示为红色而不是崩溃）
+    })
     })
 
     test('包含 Windows 路径的公式应该正确处理', async ({ page }) => {
