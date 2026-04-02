@@ -458,13 +458,6 @@
     min-height: 0;  /* 关键：允许 flex 子项缩小 */
   }
   
-    flex: 1;
-    padding: 20px;
-    overflow-y: auto;
-    border-left: 1px solid #e0e0e0;
-    background: #fafafa;
-  }
-  
   .status-bar {
     height: 28px;
     background: #f5f5f5;
