@@ -408,4 +408,136 @@ describe('TableEditor 组件', () => {
       expect(duration).toBeLessThan(1000) // 应该在 1 秒内完成
     })
   })
+
+  describe('显示验证', () => {
+    it('生成的 Markdown 表格应该正确显示', () => {
+      const generateMarkdown = (table) => {
+        if (!table.headers || table.headers.length === 0) return ''
+        let md = '| ' + table.headers.join(' | ') + ' |\n'
+        md += '| ' + table.headers.map(() => '---').join(' | ') + ' |\n'
+        table.rows.forEach(row => {
+          md += '| ' + row.join(' | ') + ' |\n'
+        })
+        return md
+      }
+      
+      const table = {
+        headers: ['姓名', '年龄', '城市'],
+        rows: [
+          ['张三', '25', '北京'],
+          ['李四', '30', '上海']
+        ],
+        align: ['left', 'left', 'left']
+      }
+      
+      const md = generateMarkdown(table)
+      
+      // 验证 1: 应该包含表头
+      expect(md).toContain('| 姓名 | 年龄 | 城市 |')
+      
+      // 验证 2: 应该包含分隔行
+      expect(md).toContain('| --- | --- | --- |')
+      
+      // 验证 3: 应该包含所有数据行
+      expect(md).toContain('| 张三 | 25 | 北京 |')
+      expect(md).toContain('| 李四 | 30 | 上海 |')
+      
+      // 验证 4: 不应该有多余内容
+      expect(md).not.toContain('undefined')
+      expect(md).not.toContain('null')
+      expect(md).not.toContain('[object Object]')
+      
+      // 验证 5: 格式应该正确（每行都以 | 开头和结尾）
+      const lines = md.trim().split('\n')
+      lines.forEach(line => {
+        expect(line.trim()).toMatch(/^\|.*\|$/)
+      })
+    })
+
+    it('表格不应该包含调试信息或占位符', () => {
+      const validateTableContent = (table) => {
+        const issues = []
+        
+        // 检查表头
+        table.headers.forEach((header, index) => {
+          if (typeof header !== 'string') {
+            issues.push(`表头 [${index}] 类型错误：${typeof header}`)
+          } else {
+            if (header.includes('undefined') || header.includes('null')) {
+              issues.push(`表头 [${index}] 包含无效值：${header}`)
+            }
+          }
+        })
+        
+        // 检查数据行
+        table.rows.forEach((row, rowIndex) => {
+          row.forEach((cell, cellIndex) => {
+            if (cell && typeof cell === 'string') {
+              if (cell.includes('[object Object]')) {
+                issues.push(`单元格 [${rowIndex}][${cellIndex}] 包含对象字符串`)
+              }
+            }
+          })
+        })
+        
+        return { valid: issues.length === 0, issues }
+      }
+      
+      const validTable = {
+        headers: ['A', 'B'],
+        rows: [['1', '2']]
+      }
+      
+      const invalidTable = {
+        headers: ['A', undefined],
+        rows: [['1', '[object Object]']]
+      }
+      
+      expect(validateTableContent(validTable).valid).toBe(true)
+      expect(validateTableContent(invalidTable).valid).toBe(false)
+    })
+
+    it('空单元格应该被正确处理', () => {
+      const normalizeCell = (cell) => {
+        if (cell === null || cell === undefined) return ''
+        return String(cell).trim()
+      }
+      
+      expect(normalizeCell(null)).toBe('')
+      expect(normalizeCell(undefined)).toBe('')
+      expect(normalizeCell('  test  ')).toBe('test')
+      expect(normalizeCell('')).toBe('')
+      
+      // 空单元格在 Markdown 中应该显示为空，而不是占位符
+      const generateCell = (content) => {
+        const normalized = normalizeCell(content)
+        expect(normalized).not.toBe('undefined')
+        expect(normalized).not.toBe('null')
+        return normalized
+      }
+      
+      expect(generateCell(null)).toBe('')
+      expect(generateCell('data')).toBe('data')
+    })
+
+    it('表格对齐标记应该正确显示', () => {
+      const generateAlignmentRow = (align) => {
+        return '| ' + align.map(a => {
+          if (a === 'left') return ':---'
+          if (a === 'right') return '---:'
+          if (a === 'center') return ':---:'
+          return '---'
+        }).join(' | ') + ' |'
+      }
+      
+      expect(generateAlignmentRow(['left', 'right', 'center']))
+        .toBe('| :--- | ---: | :---: |')
+      
+      // 验证对齐标记格式
+      const row = generateAlignmentRow(['left', 'right'])
+      expect(row).toMatch(/^\|.*\|$/)
+      expect(row).toContain(':---')
+      expect(row).toContain('---:')
+    })
+  })
 })

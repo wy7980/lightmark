@@ -567,4 +567,119 @@ describe('CodeBlock 组件', () => {
       expect(copiedText).toBe('const x = 1')
     })
   })
+
+  describe('任务列表显示验证', () => {
+    it('生成的 Markdown 任务列表应该正确显示', () => {
+      const generateTaskListMarkdown = (tasks) => {
+        return tasks.map(task => {
+          const checkbox = task.checked ? '[x]' : '[ ]'
+          return `- ${checkbox} ${task.text}`
+        }).join('\n')
+      }
+      
+      const tasks = [
+        { text: '未完成任务', checked: false },
+        { text: '已完成任务', checked: true },
+        { text: '另一个未完成', checked: false }
+      ]
+      
+      const md = generateTaskListMarkdown(tasks)
+      
+      // 验证 1: 应该包含所有任务文本
+      expect(md).toContain('未完成任务')
+      expect(md).toContain('已完成任务')
+      expect(md).toContain('另一个未完成')
+      
+      // 验证 2: 应该包含正确的复选框标记
+      expect(md).toContain('- [ ] 未完成任务')
+      expect(md).toContain('- [x] 已完成任务')
+      expect(md).toContain('- [ ] 另一个未完成')
+      
+      // 验证 3: 不应该有多余内容
+      expect(md).not.toContain('undefined')
+      expect(md).not.toContain('null')
+      expect(md).not.toContain('[object Object]')
+      
+      // 验证 4: 每行都应该以任务列表标记开头
+      const lines = md.split('\n')
+      lines.forEach(line => {
+        expect(line).toMatch(/^-\s*\[[ x]\]\s*.+/)
+      })
+    })
+
+    it('任务列表渲染不应该显示原始 Markdown 语法', () => {
+      // 模拟渲染后的内容（应该已经转换为 HTML/UI）
+      const renderTaskList = (tasks) => {
+        return tasks.map(task => ({
+          type: 'task-item',
+          text: task.text,
+          checked: task.checked,
+          rawMarkdown: false
+        }))
+      }
+      
+      const tasks = [
+        { text: '任务 1', checked: false },
+        { text: '任务 2', checked: true }
+      ]
+      
+      const rendered = renderTaskList(tasks)
+      
+      rendered.forEach(item => {
+        expect(item.text).not.toContain('- [ ]')
+        expect(item.text).not.toContain('- [x]')
+        expect(typeof item.text).toBe('string')
+        expect(item.text.trim().length).toBeGreaterThan(0)
+        expect(item.text).not.toContain('undefined')
+        expect(item.text).not.toContain('null')
+      })
+    })
+
+    it('任务状态应该正确映射到 UI', () => {
+      const mapTaskToUI = (task) => ({
+        displayText: task.text,
+        isChecked: task.checked,
+        cssClass: task.checked ? 'task-completed' : 'task-pending'
+      })
+      
+      const uncheckedTask = { text: '未完成', checked: false }
+      const checkedTask = { text: '已完成', checked: true }
+      
+      const uiUnchecked = mapTaskToUI(uncheckedTask)
+      const uiChecked = mapTaskToUI(checkedTask)
+      
+      expect(uiUnchecked.isChecked).toBe(false)
+      expect(uiUnchecked.cssClass).toBe('task-pending')
+      expect(uiChecked.isChecked).toBe(true)
+      expect(uiChecked.cssClass).toBe('task-completed')
+      expect(uiUnchecked.displayText).toBe('未完成')
+      expect(uiChecked.displayText).toBe('已完成')
+    })
+
+    it('任务列表不应该包含内部数据结构', () => {
+      const sanitizeTaskDisplay = (task) => ({
+        text: task.text,
+        checked: task.checked
+      })
+      
+      const internalTask = {
+        id: 123,
+        text: '测试任务',
+        checked: false,
+        createdAt: '2026-04-02',
+        updatedAt: null,
+        metadata: {}
+      }
+      
+      const display = sanitizeTaskDisplay(internalTask)
+      
+      expect(Object.keys(display).length).toBe(2)
+      expect(display).toHaveProperty('text')
+      expect(display).toHaveProperty('checked')
+      expect(display).not.toHaveProperty('id')
+      expect(display).not.toHaveProperty('createdAt')
+      expect(display).not.toHaveProperty('metadata')
+      expect(display.text).toBe('测试任务')
+    })
+  })
 })

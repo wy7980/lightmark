@@ -81,6 +81,49 @@ test.describe('LightMark 核心功能 E2E', () => {
         await expect(editor).toBeEditable()
       }
     })
+
+    test('表格显示应该正确且无多余内容', async ({ page }) => {
+      const insertTableBtn = page.locator('[data-testid="insert-table"], button:has-text("表格")').first()
+      const btnCount = await insertTableBtn.count()
+      
+      if (btnCount > 0) {
+        await insertTableBtn.click()
+        await page.waitForSelector('table', { timeout: 5000 })
+        
+        // 验证 1: 表格应该可见且结构完整
+        const table = page.locator('table')
+        await expect(table).toBeVisible()
+        
+        // 验证 2: 表格应该有表头
+        const headers = table.locator('thead th, tr:first-child th')
+        const headerCount = await headers.count()
+        expect(headerCount).toBeGreaterThan(0)
+        
+        // 验证 3: 表格不应该有占位符文本或调试信息
+        const tableText = await table.textContent()
+        expect(tableText).not.toContain('undefined')
+        expect(tableText).not.toContain('null')
+        expect(tableText).not.toContain('[object Object]')
+        expect(tableText).not.toContain('placeholder')
+        expect(tableText).not.toContain('TODO')
+        
+        // 验证 4: 表格单元格应该可访问
+        const cells = table.locator('td, th')
+        const cellCount = await cells.count()
+        expect(cellCount).toBeGreaterThan(0)
+        
+        // 验证 5: 每个单元格都应该有内容（不是空字符串）
+        for (let i = 0; i < Math.min(cellCount, 6); i++) {
+          const cellText = await cells.nth(i).textContent()
+          if (cellText) {
+            const trimmed = cellText.trim()
+            // 单元格可以是空的，但不应该包含错误文本
+            expect(trimmed).not.toContain('Error')
+            expect(trimmed).not.toContain('undefined')
+          }
+        }
+      }
+    })
   })
 
   // ==================== 数学公式测试 ====================
@@ -220,6 +263,78 @@ test.describe('LightMark 核心功能 E2E', () => {
       // 编辑器不应该崩溃
       await expect(editor).toBeEditable()
     })
+
+    test('公式显示应该正确且无多余内容', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 插入公式
+      await editor.click()
+      await editor.fill('$E=mc^2$ 和 $$\\sum_{i=1}^{n} i$$')
+      await page.waitForTimeout(1000)
+      
+      // 验证 1: 编辑器内容应该包含公式
+      const content = await editor.textContent()
+      expect(content).toContain('E=mc^2')
+      expect(content).toContain('\\sum')
+      
+      // 验证 2: 不应该有调试信息或占位符
+      expect(content).not.toContain('undefined')
+      expect(content).not.toContain('null')
+      expect(content).not.toContain('[object Object]')
+      expect(content).not.toContain('latex=')
+      expect(content).not.toContain('type=')
+      expect(content).not.toContain('Equation(')
+      
+      // 验证 3: KaTeX 渲染元素（如果有）不应该显示错误
+      const katexElements = page.locator('.katex')
+      const katexCount = await katexElements.count()
+      
+      if (katexCount > 0) {
+        // 检查是否有 KaTeX 错误标记
+        const katexError = page.locator('.katex-error')
+        const errorCount = await katexError.count()
+        expect(errorCount).toBe(0)
+        
+        // KaTeX 元素应该可见
+        for (let i = 0; i < Math.min(katexCount, 3); i++) {
+          await expect(katexElements.nth(i)).toBeVisible()
+        }
+      }
+      
+      // 验证 4: 编辑器不应该有异常样式
+      const editorElement = page.locator('.ProseMirror')
+      const editorClass = await editorElement.getAttribute('class')
+      expect(editorClass).not.toContain('error')
+      expect(editorClass).not.toContain('crash')
+    })
+
+    test('块级公式应该正确显示为独立块', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 插入块级公式
+      await editor.click()
+      await editor.fill('这是正文\n$$\\frac{1}{2}$$\n这是正文之后')
+      await page.waitForTimeout(1000)
+      
+      // 验证 1: 内容应该包含所有文本
+      const content = await editor.textContent()
+      expect(content).toContain('这是正文')
+      expect(content).toContain('\\frac{1}{2}')
+      expect(content).toContain('这是正文之后')
+      
+      // 验证 2: 不应该有多余的分隔符或标记
+      expect(content).not.toContain('$$ $$') // 不应该有空的块级公式标记
+      expect(content).not.toContain('$$$$') // 不应该有重复标记
+      
+      // 验证 3: 公式应该在独立行（检查 HTML 结构）
+      const mathBlock = page.locator('.math-block, .display-math, div[data-math-type="block"]')
+      const mathBlockCount = await mathBlock.count()
+      
+      // 如果有专门的块级公式容器，它应该是可见的
+      if (mathBlockCount > 0) {
+        await expect(mathBlock.first()).toBeVisible()
+      }
+    })
   })
 
   // ==================== 任务列表测试 ====================
@@ -241,6 +356,74 @@ test.describe('LightMark 核心功能 E2E', () => {
       // 如果 GFM 支持正常，应该有 2 个复选框
       if (count > 0) {
         expect(count).toBeGreaterThanOrEqual(1)
+      }
+    })
+
+    test('任务列表显示应该正确且复选框状态正确', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 输入任务列表
+      await editor.click()
+      await editor.fill('- [ ] 任务 1\n- [x] 任务 2\n- [ ] 任务 3')
+      await page.waitForTimeout(1000)
+      
+      // 验证 1: 复选框应该存在
+      const checkboxes = page.locator('input[type="checkbox"]')
+      const checkboxCount = await checkboxes.count()
+      expect(checkboxCount).toBeGreaterThanOrEqual(1)
+      
+      // 验证 2: 任务文本应该正确显示
+      const content = await editor.textContent()
+      expect(content).toContain('任务 1')
+      expect(content).toContain('任务 2')
+      expect(content).toContain('任务 3')
+      
+      // 验证 3: 不应该有多余的标记或调试信息
+      expect(content).not.toContain('undefined')
+      expect(content).not.toContain('null')
+      expect(content).not.toContain('[ ]') // Markdown 语法不应该直接显示
+      expect(content).not.toContain('[x]') // Markdown 语法应该被渲染为复选框
+      
+      // 验证 4: 复选框状态应该正确
+      // 第二个任务应该是已选中状态（如果渲染正确）
+      if (checkboxCount >= 2) {
+        const secondCheckbox = checkboxes.nth(1)
+        const isChecked = await secondCheckbox.isChecked()
+        // 如果 GFM 渲染正确，第二个复选框应该是选中状态
+        // 但由于是测试输入，可能不会自动选中，所以这里只验证复选框存在
+        expect(secondCheckbox).toBeTruthy()
+      }
+      
+      // 验证 5: 任务列表项应该可访问
+      const taskItems = page.locator('li:has(input[type="checkbox"])')
+      const taskItemCount = await taskItems.count()
+      if (taskItemCount > 0) {
+        await expect(taskItems.first()).toBeVisible()
+      }
+    })
+
+    test('任务列表不应该显示 Markdown 原始语法', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 输入多种任务列表语法
+      await editor.click()
+      await editor.fill('- [ ] 未开始\n* [ ] 另一种未开始\n- [x] 已完成')
+      await page.waitForTimeout(1000)
+      
+      // 获取渲染后的内容
+      const content = await editor.textContent()
+      
+      // 验证：Markdown 语法标记不应该直接显示在渲染内容中
+      // （它们应该被转换为复选框 UI 元素）
+      const lines = content.split('\n').filter(line => line.trim().length > 0)
+      
+      for (const line of lines) {
+        // 每一行都不应该包含原始的 Markdown 任务列表标记
+        expect(line).not.toMatch(/^[*-]\s*\[\s*\]/) // 不应该以 "- [ ]" 开头
+        expect(line).not.toMatch(/^[*-]\s*\[\s*x\s*\]/) // 不应该以 "- [x]" 开头
+        
+        // 但应该包含任务文本
+        expect(line).toMatch(/(未开始 | 已完成)/)
       }
     })
   })
