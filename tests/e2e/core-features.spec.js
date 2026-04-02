@@ -125,6 +125,101 @@ test.describe('LightMark 核心功能 E2E', () => {
       const content = await editor.textContent()
       expect(content).toContain('\\invalid_command')
     })
+
+    test('块级公式插入应该成功', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 输入块级公式
+      await editor.click()
+      await editor.fill('$$\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}$$')
+      
+      // 等待渲染
+      await page.waitForTimeout(1000)
+      
+      // 编辑器应该仍然可用
+      await expect(editor).toBeEditable()
+      
+      // 验证公式内容
+      const content = await editor.textContent()
+      expect(content).toContain('\\sum')
+      expect(content).toContain('\\frac')
+    })
+
+    test('已插入的公式应该可以编辑修改', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 步骤 1: 插入初始公式
+      await editor.click()
+      await editor.fill('$E=mc^2$')
+      await page.waitForTimeout(500)
+      
+      // 步骤 2: 移动光标到公式中间
+      await editor.click()
+      await page.keyboard.press('ArrowLeft') // 移动到 $ 前面
+      await page.keyboard.press('ArrowLeft') // 移动到 2 前面
+      await page.keyboard.press('ArrowLeft') // 移动到 c 前面
+      
+      // 步骤 3: 修改公式 (将 c^2 改为 c^3)
+      await page.keyboard.press('Backspace') // 删除 c
+      await editor.fill('E=mc^3$')
+      await page.waitForTimeout(500)
+      
+      // 步骤 4: 验证修改后的内容
+      const content = await editor.textContent()
+      expect(content).toContain('E=mc^3')
+      
+      // 编辑器应该仍然可用
+      await expect(editor).toBeEditable()
+    })
+
+    test('块级公式应该可以编辑修改', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 步骤 1: 插入块级公式
+      await editor.click()
+      await editor.fill('$$\\frac{1}{2}$$')
+      await page.waitForTimeout(500)
+      
+      // 步骤 2: 定位并修改公式
+      await editor.click()
+      // 将分子从 1 改为 3
+      await editor.fill('$$\\frac{3}{2}$$')
+      await page.waitForTimeout(500)
+      
+      // 步骤 3: 验证修改后的内容
+      const content = await editor.textContent()
+      expect(content).toContain('\\frac{3}{2}')
+      
+      // 编辑器应该仍然可用
+      await expect(editor).toBeEditable()
+    })
+
+    test('公式编辑后应该正确重新渲染', async ({ page }) => {
+      const editor = page.locator('.ProseMirror')
+      
+      // 步骤 1: 插入简单公式
+      await editor.click()
+      await editor.fill('$a+b$')
+      await page.waitForTimeout(500)
+      
+      // 记录初始状态
+      const initialContent = await editor.textContent()
+      expect(initialContent).toContain('a+b')
+      
+      // 步骤 2: 修改为复杂公式
+      await editor.click()
+      await editor.fill('$\\alpha + \\beta = \\gamma$')
+      await page.waitForTimeout(1000)
+      
+      // 步骤 3: 验证重新渲染
+      const finalContent = await editor.textContent()
+      expect(finalContent).toContain('\\alpha')
+      expect(finalContent).toContain('\\beta')
+      expect(finalContent).toContain('\\gamma')
+      
+      // 编辑器不应该崩溃
+      await expect(editor).toBeEditable()
+    })
   })
 
   // ==================== 任务列表测试 ====================

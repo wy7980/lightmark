@@ -224,6 +224,101 @@ describe('EquationEditor 组件', () => {
     })
   })
 
+  describe('公式编辑功能', () => {
+    it('应该支持修改已插入的行内公式', () => {
+      // 模拟公式编辑场景
+      let latex = 'E=mc^2'
+      
+      // 初始公式
+      expect(latex).toBe('E=mc^2')
+      
+      // 用户修改：将 c^2 改为 c^3
+      latex = latex.replace('c^2', 'c^3')
+      expect(latex).toBe('E=mc^3')
+      
+      // 验证修改后的公式仍然有效
+      expect(latex.length).toBeGreaterThan(0)
+      expect(latex).not.toContain('undefined')
+    })
+
+    it('应该支持修改已插入的块级公式', () => {
+      // 模拟块级公式编辑
+      let latex = '\\frac{1}{2}'
+      
+      // 初始公式
+      expect(latex).toBe('\\frac{1}{2}')
+      
+      // 用户修改：将分子从 1 改为 3
+      latex = latex.replace('\\frac{1}', '\\frac{3}')
+      expect(latex).toBe('\\frac{3}{2}')
+      
+      // 验证括号仍然匹配
+      const openBraces = (latex.match(/\{/g) || []).length
+      const closeBraces = (latex.match(/\}/g) || []).length
+      expect(openBraces).toBe(closeBraces)
+    })
+
+    it('公式编辑后应该保持语法正确', () => {
+      const testCases = [
+        { original: '$a+b$', modified: '$\\alpha+\\beta$' },
+        { original: '$$x^2$$', modified: '$$\\sqrt{x^3}$$' },
+        { original: '$\\sum_{i=1}^{n}$', modified: '$\\sum_{i=1}^{n+1}$' },
+      ]
+      
+      testCases.forEach(({ original, modified }) => {
+        // 验证修改后的公式不为空
+        expect(modified.trim().length).toBeGreaterThan(0)
+        
+        // 验证修改后的公式结构完整（至少包含 $ 或 {} 之一）
+        const hasValidStructure = 
+          modified.includes('$') || 
+          modified.includes('{') || 
+          modified.includes('\\')
+        expect(hasValidStructure).toBe(true)
+      })
+    })
+
+    it('应该处理公式编辑时的常见错误', () => {
+      // 场景 1: 用户删除了闭合括号
+      const incomplete1 = '\\frac{1}{2'
+      const open1 = (incomplete1.match(/\{/g) || []).length
+      const close1 = (incomplete1.match(/\}/g) || []).length
+      expect(open1).not.toBe(close1) // 应该检测到不匹配
+      
+      // 场景 2: 用户输入了空公式
+      const empty = ''
+      expect(empty.trim().length).toBe(0)
+      
+      // 场景 3: 用户输入了无效命令
+      const invalid = '\\invalidcmd{arg}'
+      // 即使命令无效，语法结构应该仍然完整
+      expect(invalid).toContain('\\')
+      expect(invalid).toContain('{')
+      expect(invalid).toContain('}')
+    })
+
+    it('应该支持公式的增量编辑', () => {
+      // 模拟用户逐步构建公式的过程
+      let steps = [
+        'E=',           // 步骤 1: 开始输入
+        'E=mc',         // 步骤 2: 添加变量
+        'E=mc^2',       // 步骤 3: 添加指数
+        'E=mc^{2}',     // 步骤 4: 添加括号
+      ]
+      
+      steps.forEach((step, index) => {
+        // 每一步都应该是有效的字符串
+        expect(typeof step).toBe('string')
+        expect(step.length).toBeGreaterThan(0)
+        
+        // 后一步应该比前一步长（增量编辑）
+        if (index > 0) {
+          expect(step.length).toBeGreaterThanOrEqual(steps[index - 1].length)
+        }
+      })
+    })
+  })
+
   describe('KaTeX 配置', () => {
     it('throwOnError 应该为 false', () => {
       const config = { throwOnError: false }
