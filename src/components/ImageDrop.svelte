@@ -27,32 +27,96 @@
     }
   }
   
+  /**
+   * 处理图片文件
+   * - 验证文件类型
+   * - 限制文件大小 (5MB)
+   * - 错误处理
+   */
   function handleFiles(files: FileList) {
+    const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
+    
     Array.from(files).forEach(file => {
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          const src = e.target?.result as string
-          const alt = file.name.replace(/\.[^/.]+$/, '')
-          dispatch('imageInsert', { src, alt })
+      try {
+        // 验证文件类型
+        if (!file.type.startsWith('image/')) {
+          console.warn('[ImageDrop] 不支持的文件类型:', file.type)
+          return
         }
+        
+        // 验证具体类型
+        if (!ALLOWED_TYPES.includes(file.type)) {
+          console.warn('[ImageDrop] 不支持的图片格式:', file.type)
+          return
+        }
+        
+        // 验证文件大小
+        if (file.size > MAX_FILE_SIZE) {
+          const sizeMB = (file.size / 1024 / 1024).toFixed(2)
+          console.warn('[ImageDrop] 文件过大:', sizeMB, 'MB')
+          return
+        }
+        
+        const reader = new FileReader()
+        
+        reader.onload = (e) => {
+          try {
+            const src = e.target?.result as string
+            const alt = file.name.replace(/\.[^/.]+$/, '')
+            
+            // 验证生成的 dataURL
+            if (!src || src.length === 0) {
+              throw new Error('生成的图片数据为空')
+            }
+            
+            dispatch('imageInsert', { src, alt })
+            console.log('[ImageDrop] 图片插入成功:', alt)
+          } catch (error) {
+            console.error('[ImageDrop] 处理图片数据失败:', error)
+          }
+        }
+        
+        reader.onerror = () => {
+          console.error('[ImageDrop] 读取文件失败')
+        }
+        
+        reader.onabort = () => {
+          console.warn('[ImageDrop] 读取文件被中止')
+        }
+        
         reader.readAsDataURL(file)
+      } catch (error) {
+        console.error('[ImageDrop] 处理文件异常:', error)
       }
     })
   }
   
   // 处理剪贴板粘贴
   function handlePaste(e: ClipboardEvent) {
-    const items = e.clipboardData?.items
-    if (items) {
+    try {
+      const items = e.clipboardData?.items
+      if (!items) {
+        console.warn('[ImageDrop] 剪贴板数据不可用')
+        return
+      }
+      
       Array.from(items).forEach(item => {
-        if (item.type.startsWith('image/')) {
-          const file = item.getAsFile()
-          if (file) {
-            handleFiles({ 0: file, length: 1 } as any)
+        try {
+          if (item.type.startsWith('image/')) {
+            const file = item.getAsFile()
+            if (file) {
+              handleFiles({ 0: file, length: 1 } as any)
+            } else {
+              console.warn('[ImageDrop] 无法从剪贴板获取文件')
+            }
           }
+        } catch (error) {
+          console.error('[ImageDrop] 处理剪贴板项目失败:', error)
         }
       })
+    } catch (error) {
+      console.error('[ImageDrop] 处理粘贴异常:', error)
     }
   }
 </script>

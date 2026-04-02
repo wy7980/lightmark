@@ -25,21 +25,56 @@
   
   async function highlightCode() {
     try {
+      // 空代码处理
+      if (!code) {
+        highlightedCode = ''
+        return
+      }
+      
       // 使用 highlight.js 进行语法高亮
       const hljs = await import('highlight.js/lib/core');
       
       // 动态加载语言
       if (supportedLanguages.includes(language)) {
-        const lang = await import(`highlight.js/lib/languages/${language}`);
-        hljs.registerLanguage(language, lang.default);
+        try {
+          const lang = await import(`highlight.js/lib/languages/${language}`);
+          hljs.registerLanguage(language, lang.default);
+        } catch (langError) {
+          console.warn('[SyntaxHighlighter] 加载语言失败，使用纯文本:', language, langError);
+          // 优雅降级：使用纯文本
+          highlightedCode = escapeHtml(code);
+          return;
+        }
+      } else {
+        console.warn('[SyntaxHighlighter] 不支持的语言，使用纯文本:', language);
+        highlightedCode = escapeHtml(code);
+        return;
       }
       
       const result = hljs.highlight(code, { language });
       highlightedCode = result.value;
     } catch (error) {
-      console.error('语法高亮失败:', error);
-      highlightedCode = code;
+      console.error('[SyntaxHighlighter] 语法高亮失败，使用纯文本:', error);
+      // 优雅降级：返回转义后的纯文本
+      highlightedCode = escapeHtml(code);
     }
+  }
+  
+  /**
+   * 转义 HTML 特殊字符
+   */
+  function escapeHtml(text: string): string {
+    if (!text) return '';
+    
+    const entities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;'
+    };
+    
+    return text.replace(/[&<>"']/g, (char) => entities[char] || char);
   }
   
   $: if (code) {

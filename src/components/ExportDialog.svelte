@@ -15,18 +15,48 @@
     theme: 'light' | 'dark'
   }
   
+  /**
+   * 将 Markdown 转换为 HTML
+   * - 转义 HTML 特殊字符防止 XSS
+   * - 错误处理
+   * - 空内容处理
+   */
   function generateHtml(mdContent: string): string {
-    // 简单 Markdown 转 HTML
-    let html = mdContent
-      .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-      .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-      .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-      .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-      .replace(/\*(.*)\*/gim, '<em>$1</em>')
-      .replace(/`([^`]+)`/gim, '<code>$1</code>')
-      .replace(/\n/gim, '<br>')
-    
-    return `<!DOCTYPE html>
+    try {
+      // 空内容处理
+      if (!mdContent || mdContent.trim() === '') {
+        console.warn('[ExportDialog] 导出空文档')
+        return '<p>空文档</p>'
+      }
+      
+      // 先转义 HTML 特殊字符（防止 XSS）
+      let safeContent = mdContent.replace(/[&<>"']/g, (char) => {
+        const entities: Record<string, string> = {
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        }
+        return entities[char] || char
+      })
+      
+      // Markdown 转 HTML
+      let html = safeContent
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+        .replace(/\*(.*)\*/gim, '<em>$1</em>')
+        .replace(/`([^`]+)`/gim, '<code>$1</code>')
+        .replace(/\n/gim, '<br>')
+      
+      // 验证生成的 HTML
+      if (!html || html.trim() === '') {
+        throw new Error('生成的 HTML 为空')
+      }
+      
+      return `<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
@@ -114,29 +144,43 @@ function hello() {
 > LightMark - 高性能 Markdown 编辑器
 `
     
-    const html = generateHtml(sampleMd)
-    
-    if (exportFormat === 'html') {
-      // 下载 HTML 文件
-      const blob = new Blob([html], { type: 'text/html' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'lightmark-export.html'
-      a.click()
-      URL.revokeObjectURL(url)
+    try {
+      const html = generateHtml(sampleMd)
+      
+      if (exportFormat === 'html') {
+        // 下载 HTML 文件
+        const blob = new Blob([html], { type: 'text/html' })
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'lightmark-export.html'
+        a.click()
+        URL.revokeObjectURL(url)
+      }
+      
+      dispatch('exportHtml', { content: html })
+      console.log('[ExportDialog] 导出成功')
+    } catch (error) {
+      console.error('[ExportDialog] 导出失败:', error)
+      alert('导出失败：' + (error instanceof Error ? error.message : '未知错误'))
     }
-    
-    dispatch('exportHtml', { content: html })
   }
   
   function printContent() {
-    const printWindow = window.open('', '_blank')
-    if (printWindow) {
+    try {
+      const printWindow = window.open('', '_blank')
+      if (!printWindow) {
+        console.warn('[ExportDialog] 无法打开打印窗口')
+        return
+      }
+      
       const sampleMd = `# LightMark 打印预览\n\n这是打印内容预览...`
       printWindow.document.write(generateHtml(sampleMd))
       printWindow.document.close()
       printWindow.print()
+    } catch (error) {
+      console.error('[ExportDialog] 打印失败:', error)
+      alert('打印失败：' + (error instanceof Error ? error.message : '未知错误'))
     }
   }
 </script>

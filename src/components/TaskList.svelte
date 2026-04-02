@@ -18,41 +18,148 @@
   ]
   
   let newTaskText = ''
+  let errorMessage = ''
+  
+  /**
+   * 验证任务文本
+   * - 不能为空
+   * - 不能超过 200 字符
+   * - 不能包含危险字符
+   */
+  function validateTaskText(text: string): { valid: boolean; error?: string } {
+    if (!text || typeof text !== 'string') {
+      return { valid: false, error: '任务文本不能为空' }
+    }
+    
+    const trimmed = text.trim()
+    if (trimmed.length === 0) {
+      return { valid: false, error: '任务文本不能为空' }
+    }
+    
+    if (trimmed.length > 200) {
+      return { valid: false, error: '任务文本不能超过 200 字符' }
+    }
+    
+    // 检查危险字符（防止 XSS）
+    if (trimmed.includes('<script') || trimmed.includes('javascript:')) {
+      return { valid: false, error: '任务文本包含非法内容' }
+    }
+    
+    return { valid: true }
+  }
   
   function addTask() {
-    if (newTaskText.trim()) {
+    try {
+      errorMessage = ''
+      
+      // 验证输入
+      const validation = validateTaskText(newTaskText)
+      if (!validation.valid) {
+        errorMessage = validation.error || '添加任务失败'
+        console.warn('[TaskList] 添加任务验证失败:', errorMessage)
+        return
+      }
+      
+      if (!tasks) {
+        tasks = []
+      }
+      
+      const trimmedText = newTaskText.trim()
       tasks.push({
         id: Date.now(),
-        text: newTaskText.trim(),
+        text: trimmedText,
         checked: false
       })
+      
       newTaskText = ''
       updateMarkdown()
+      
+      console.log('[TaskList] 任务添加成功:', trimmedText)
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : '添加任务失败'
+      console.error('[TaskList] 添加任务异常:', error)
     }
   }
   
   function toggleTask(id: number) {
-    const task = tasks.find(t => t.id === id)
-    if (task) {
-      task.checked = !task.checked
-      updateMarkdown()
+    try {
+      if (!tasks || tasks.length === 0) {
+        console.warn('[TaskList] 任务列表为空')
+        return
+      }
+      
+      const task = tasks.find(t => t.id === id)
+      if (task) {
+        task.checked = !task.checked
+        updateMarkdown()
+      } else {
+        console.warn('[TaskList] 未找到任务:', id)
+      }
+    } catch (error) {
+      console.error('[TaskList] 切换任务状态失败:', error)
     }
   }
   
   function deleteTask(id: number) {
-    tasks = tasks.filter(t => t.id !== id)
-    updateMarkdown()
+    try {
+      if (!tasks) {
+        console.warn('[TaskList] 任务列表为空')
+        return
+      }
+      
+      const beforeLength = tasks.length
+      tasks = tasks.filter(t => t.id !== id)
+      
+      if (tasks.length === beforeLength) {
+        console.warn('[TaskList] 删除失败，未找到任务:', id)
+      } else {
+        updateMarkdown()
+        console.log('[TaskList] 任务删除成功:', id)
+      }
+    } catch (error) {
+      console.error('[TaskList] 删除任务异常:', error)
+    }
   }
   
   function updateMarkdown() {
-    tasks = tasks  // 触发响应式更新
+    try {
+      // 触发响应式更新
+      tasks = [...tasks]
+    } catch (error) {
+      console.error('[TaskList] 更新 Markdown 失败:', error)
+    }
   }
 
   function confirmInsert() {
-    const markdown = '\n' + tasks.map(t =>
-      `- [${t.checked ? 'x' : ' '}] ${t.text}`
-    ).join('\n') + '\n'
-    dispatch('taskInsert', { markdown })
+    try {
+      if (!tasks || tasks.length === 0) {
+        errorMessage = '没有可插入的任务'
+        console.warn('[TaskList] 没有任务可插入')
+        return
+      }
+      
+      const markdown = '\n' + tasks.map(t => {
+        // 安全处理任务文本
+        const safeText = t.text
+          .replace(/[&<>"']/g, (char) => {
+            const entities: Record<string, string> = {
+              '&': '&amp;',
+              '<': '&lt;',
+              '>': '&gt;',
+              '"': '&quot;',
+              "'": '&#39;'
+            }
+            return entities[char] || char
+          })
+        return `- [${t.checked ? 'x' : ' '}] ${safeText}`
+      }).join('\n') + '\n'
+      
+      dispatch('taskInsert', { markdown })
+      console.log('[TaskList] 任务列表插入成功')
+    } catch (error) {
+      errorMessage = error instanceof Error ? error.message : '插入任务失败'
+      console.error('[TaskList] 插入任务异常:', error)
+    }
   }
   
   function handleKeydown(e: KeyboardEvent) {
@@ -85,10 +192,16 @@
       bind:value={newTaskText}
       on:keydown={handleKeydown}
       placeholder="添加新任务..."
-      class="task-input"
+      class="task-input {errorMessage ? 'error' : ''}"
     />
     <button class="add-btn" on:click={addTask}>添加</button>
   </div>
+  
+  {#if errorMessage}
+    <div class="error-message">
+      ⚠️ {errorMessage}
+    </div>
+  {/if}
   
   <ul class="task-list">
     {#each tasks as task (task.id)}
@@ -185,6 +298,21 @@
   .task-input:focus {
     outline: none;
     border-color: #1976d2;
+  }
+  
+  .task-input.error {
+    border-color: #f44336;
+    background: #ffebee;
+  }
+  
+  .error-message {
+    padding: 8px 12px;
+    background: #ffebee;
+    border-left: 3px solid #f44336;
+    color: #c62828;
+    font-size: 13px;
+    border-radius: 4px;
+    margin-bottom: 12px;
   }
   
   .add-btn {
