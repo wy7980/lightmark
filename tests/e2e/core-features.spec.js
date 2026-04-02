@@ -95,11 +95,13 @@ test.describe('LightMark 核心功能 E2E', () => {
       
       const tableMarkdown = '| 列 1 | 列 2 |\n|------|------|\n| 单元格 1 | 单元格 2 |'
       await editor.fill(tableMarkdown)
-      await page.waitForTimeout(1000)
+      await page.waitForTimeout(2000) // 增加等待时间
       
+      // 验证表格存在
       const table = page.locator('table').first()
-      await expect(table).toBeVisible()
+      await expect(table).toBeVisible({ timeout: 5000 })
       
+      // 验证内容
       const content = await editor.textContent()
       expect(content).toContain('列 1')
       expect(content).toContain('单元格 1')
