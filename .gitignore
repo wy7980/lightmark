@@ -31,3 +31,11 @@ npm-debug.log*
 playwright-report/
 test-results/
 playwright/.cache/
+
+# Runtime state files
+.current-task.md
+.dev-request.json
+.dev-result.json
+.pipeline-state.json
+.trigger-dev-agent
+.dev-complete
