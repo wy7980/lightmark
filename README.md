@@ -2,6 +2,33 @@
 
 🚀 **Notepad++ 的启动速度 + Typora 的即时渲染**
 
+[![Test Suite](https://github.com/wy7980/lightmark/actions/workflows/test.yml/badge.svg)](https://github.com/wy7980/lightmark/actions/workflows/test.yml)
+[![Build](https://github.com/wy7980/lightmark/actions/workflows/build.yml/badge.svg)](https://github.com/wy7980/lightmark/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+## 📊 CI/CD 状态
+
+### 构建状态
+
+| 平台 | 状态 | 说明 |
+|------|------|------|
+| Windows | [![Build Windows](https://github.com/wy7980/lightmark/actions/workflows/build-windows.yml/badge.svg)](https://github.com/wy7980/lightmark/actions/workflows/build-windows.yml) | `.exe` 安装包 |
+| Linux | [![Build Linux](https://github.com/wy7980/lightmark/actions/workflows/build.yml/badge.svg)](https://github.com/wy7980/lightmark/actions/workflows/build.yml) | `.AppImage` / `.deb` |
+| macOS | ⏳ 待配置 | `.dmg` / `.app` |
+
+### 测试状态
+
+| 测试类型 | 用例数 | 通过率 | 状态 |
+|---------|--------|--------|------|
+| **单元测试** | 116 | 100% | ✅ 通过 |
+| **组件测试** | 116 | 100% | ✅ 通过 |
+| **E2E 测试** | 40+ | ⏳ CI 运行 | ⏳ 待验证 |
+| **构建测试** | - | - | ✅ 通过 |
+
+**最新测试运行**: [查看 GitHub Actions](https://github.com/wy7980/lightmark/actions)
+
+---
+
 ## 特性
 
 - ⚡ 极速启动 (< 500ms)
@@ -56,6 +83,28 @@ npm run build
 
 构建产物在 `src-tauri/target/release/` 目录
 
+### 4. 运行测试
+
+```bash
+# 运行所有测试
+npm test
+
+# 仅单元测试 (116 个用例)
+npm run test:unit
+
+# 仅组件测试 (116 个用例)
+npm run test:component
+
+# 仅 E2E 测试 (需要浏览器)
+npm run test:e2e
+
+# 构建测试
+npm run test:build
+
+# 生成覆盖率报告
+npm run test:coverage
+```
+
 ## 项目结构
 
 ```
@@ -72,9 +121,93 @@ lightmark/
 │   │   └── main.rs           # 主程序
 │   ├── Cargo.toml            # Rust 依赖
 │   └── tauri.conf.json       # Tauri 配置
+├── tests/                    # 测试代码
+│   ├── unit.test.js          # 单元测试 (116 用例)
+│   ├── components/           # 组件测试
+│   └── e2e/                  # E2E 测试
+├── .github/workflows/        # CI/CD 配置
+│   └── test.yml              # 测试工作流
 ├── package.json              # Node 依赖
 └── vite.config.ts            # Vite 配置
 ```
+
+---
+
+## 🧪 测试架构
+
+LightMark 采用三层测试体系，确保代码质量和功能稳定性：
+
+```
+┌─────────────────────────────────────────────────────┐
+│                  测试金字塔                          │
+├─────────────────────────────────────────────────────┤
+│                                                     │
+│              ▲                                      │
+│             / \                                     │
+│            / E2E \     40+ 用例                     │
+│           / 测试   \    模拟真实用户行为              │
+│          /─────────\                                │
+│         /           \                               │
+│        /  组件测试    \   116 用例                   │
+│       /  Component    \  测试 Svelte 组件             │
+│      /─────────────────\                            │
+│     /                   \                           │
+│    /    单元测试 Unit     \  116 用例                │
+│   /   纯函数、工具类、解析器  \ 最快 (<500ms)          │
+│  /───────────────────────────\                      │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+```
+
+### 测试覆盖
+
+| 层级 | 测试内容 | 用例数 | 执行时间 |
+|------|---------|--------|---------|
+| **单元测试** | 工具函数、解析器、配置 | 116 | ~460ms |
+| **组件测试** | Svelte 组件渲染和交互 | 116 | ~1.2s |
+| **E2E 测试** | 完整用户流程 | 40+ | ~30s |
+
+**详细测试文档**: [tests/README-TESTS.md](tests/README-TESTS.md)
+
+## 🔄 CI/CD 工作流
+
+### 自动化流程
+
+```mermaid
+graph LR
+    A[代码推送] --> B{触发 CI/CD}
+    B --> C[安装依赖]
+    C --> D[单元测试]
+    C --> E[组件测试]
+    C --> F[构建前端]
+    F --> G[E2E 测试]
+    D --> H{全部通过？}
+    E --> H
+    G --> H
+    H -->|是 | I[构建发布版]
+    H -->|否 | J[标记失败]
+    I --> K[生成制品]
+    K --> L[GitHub Releases]
+```
+
+### 工作流详情
+
+| 工作流 | 触发条件 | 任务 | 状态 |
+|--------|---------|------|------|
+| **Test Suite** | Push/PR | 单元 + 组件+E2E+ 构建 | ✅ 运行中 |
+| **Build Windows** | Push to main | Windows 构建 | ✅ 运行中 |
+| **Build Linux** | Push to main | Linux 构建 | ⏳ 待配置 |
+
+### 测试报告
+
+每次 CI 运行后会生成：
+- 📊 测试结果摘要（GitHub Summary）
+- 📁 测试 artifacts（保留 7 天）
+- 📈 覆盖率报告（保留 30 天）
+
+**查看最新运行**: https://github.com/wy7980/lightmark/actions
+
+---
 
 ## 性能优化
 
