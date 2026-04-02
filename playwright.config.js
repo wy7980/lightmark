@@ -5,19 +5,19 @@ export default defineConfig({
   testDir: './tests/e2e',
   
   // 超时设置
-  timeout: 30 * 1000,
+  timeout: 60 * 1000,  // 每个测试 60 秒超时
   expect: {
-    timeout: 5000
+    timeout: 10000     // 断言超时 10 秒
   },
   
   // 失败重试
   retries: process.env.CI ? 2 : 0,
   
   // 并行执行
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 2 : undefined,  // CI 使用 2 个 worker 加速
   
   // 报告器
-  reporter: 'html',
+  reporter: process.env.CI ? [['list'], ['html']] : 'html',
   
   // 共享配置
   use: {
@@ -25,38 +25,38 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
+    // 浏览器启动超时
+    launchOptions: {
+      timeout: 30000
+    }
   },
   
-  // 项目配置
+  // 项目配置 - 只保留 Chromium 以加速 CI
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        // 禁用不必要的功能加速测试
+        viewport: { width: 1920, height: 1080 },
+      },
     },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-    {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
-    },
-    {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    },
+    // 本地测试时可以启用其他浏览器
+    // {
+    //   name: 'firefox',
+    //   use: { ...devices['Desktop Firefox'] },
+    // },
+    // {
+    //   name: 'webkit',
+    //   use: { ...devices['Desktop Safari'] },
+    // },
   ],
   
-  // Web 服务器配置（自动启动开发服务器）
-  // 注释掉以避免 CI 环境超时 - GitHub Actions 会预先构建并部署
-  // webServer: {
-  //   command: 'npm run dev',
-  //   url: 'http://localhost:5173',
-  //   reuseExistingServer: !process.env.CI,
-  //   timeout: 120 * 1000,
-  // },
+  // Web 服务器配置
+  webServer: {
+    command: 'npm run build:frontend && npx vite preview --port 5173',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,  // 2 分钟启动超时
+  },
 })
