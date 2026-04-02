@@ -398,7 +398,7 @@ test.describe('LightMark 核心功能 E2E', () => {
       }
     })
 
-    test('无效公式不应该导致编辑器崩溃', async ({ page }) => {
+    test('连续美元符号不应该导致编辑器崩溃', async ({ page }) => {
       const editor = page.locator('.ProseMirror')
       
       // 输入无效的公式语法（连续 $$$$）
