@@ -108,17 +108,66 @@ jobs:
           exit 1
       
       - name: Run E2E tests (Chromium only)
-        run: npx playwright test --project=chromium --reporter=list
+        run: npx playwright test --project=chromium --reporter=json --reporter=list
+        id: e2e-run
+        continue-on-error: true
       
-      - name: Upload E2E test results
+      - name: Upload JSON test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-json
+          path: report.json
+          retention-days: 7
+      
+      - name: Upload HTML test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report-html
+          path: playwright-report/
+          retention-days: 7
+      
+      - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: e2e-test-results
-          path: |
-            playwright-report/
-            test-results/
+          path: test-results/
           retention-days: 7
+      
+      - name: Analyze test results
+        if: steps.e2e-run.outcome == 'failure'
+        run: |
+          echo "❌ E2E tests failed!"
+          echo ""
+          echo "=== Test Summary ==="
+          if [ -f report.json ]; then
+            python3 << 'EOF'
+import json
+with open('report.json') as f:
+    data = json.load(f)
+    stats = data.get('stats', {})
+    print(f"Total tests: {stats.get('total', 'N/A')}")
+    print(f"Passed: {stats.get('expected', 'N/A')}")
+    print(f"Failed: {stats.get('unexpected', 'N/A')}")
+    print("")
+    print("=== Failed Tests ===")
+    for test in data.get('tests', []):
+        if test.get('outcome') == 'unexpected':
+            print(f"❌ {test.get('title', 'Unknown')}")
+            for result in test.get('results', []):
+                if result.get('error'):
+                    error = result['error']
+                    print(f"   Error: {error.get('message', 'Unknown')[:200]}")
+EOF
+          fi
+          echo ""
+          echo "Check artifacts for detailed reports:"
+          echo "  - playwright-report-json: JSON report"
+          echo "  - playwright-report-html: HTML report with screenshots"
+          echo "  - e2e-test-results: Test results and videos"
+          exit 1
 
   # ==================== 构建测试 ====================
   build-test:
