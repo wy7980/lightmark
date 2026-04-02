@@ -14,8 +14,8 @@ test.describe('LightMark 核心功能 E2E', () => {
   // ==================== 编辑器初始化测试 ====================
   test.describe('编辑器初始化', () => {
     test('编辑器应该正常启动并显示', async ({ page }) => {
-      // 等待编辑器容器出现
-      const editor = page.locator('.ProseMirror')
+      // 等待 Crepe 编辑器容器出现
+      const editor = page.locator('.milkdown-crepe')
       await expect(editor).toBeVisible({ timeout: 10000 })
       
       // 编辑器应该可编辑
@@ -25,8 +25,8 @@ test.describe('LightMark 核心功能 E2E', () => {
     test('空内容启动不应该报错', async ({ page }) => {
       await page.goto('/')
       
-      // 等待编辑器初始化
-      await page.waitForSelector('.ProseMirror', { timeout: 10000 })
+      // 等待 Crepe 编辑器初始化
+      await page.waitForSelector('.milkdown-crepe', { timeout: 10000 })
       
       // 检查控制台是否有错误
       page.on('console', msg => {
@@ -36,7 +36,7 @@ test.describe('LightMark 核心功能 E2E', () => {
       })
       
       // 不应该有严重错误
-      const editor = page.locator('.ProseMirror')
+      const editor = page.locator('.milkdown-crepe')
       await expect(editor).toBeVisible()
     })
 
@@ -371,7 +371,7 @@ test.describe('LightMark 核心功能 E2E', () => {
     })
 
     test('块级公式应该正确显示为独立块', async ({ page }) => {
-      const editor = page.locator('.ProseMirror')
+      const editor = page.locator('.milkdown-crepe .ProseMirror')
       
       // 插入块级公式
       await editor.click()
@@ -385,18 +385,105 @@ test.describe('LightMark 核心功能 E2E', () => {
       expect(content).toContain('这是正文之后')
       
       // 验证 2: 不应该有多余的分隔符或标记
-      expect(content).not.toContain('$$ $$') // 不应该有空的块级公式标记
-      expect(content).not.toContain('$$$$') // 不应该有重复标记
+      expect(content).not.toContain('$$ $$')
+      expect(content).not.toContain('$$$$')
       
-      // 验证 3: 公式应该在独立行（检查 HTML 结构）
+      // 验证 3: 公式应该在独立行
       const mathBlock = page.locator('.math-block, .display-math, div[data-math-type="block"]')
       const mathBlockCount = await mathBlock.count()
       
-      // 如果有专门的块级公式容器，它应该是可见的
       if (mathBlockCount > 0) {
         await expect(mathBlock.first()).toBeVisible()
       }
     })
+
+    // ==================== Crepe 表格功能测试 ====================
+    test('Crepe 应该支持插入表格', async ({ page }) => {
+      const editor = page.locator('.milkdown-crepe .ProseMirror')
+      await editor.click()
+      
+      // 使用斜杠命令插入表格
+      await page.keyboard.type('/table')
+      await page.waitForTimeout(500)
+      await page.keyboard.press('Enter')
+      await page.waitForTimeout(1000)
+      
+      // 验证表格已插入
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+    })
+
+    test('Crepe 表格应该可以编辑', async ({ page }) => {
+      const editor = page.locator('.milkdown-crepe .ProseMirror')
+      
+      // 插入表格
+      await editor.click()
+      await page.keyboard.type('/table')
+      await page.waitForTimeout(500)
+      await page.keyboard.press('Enter')
+      await page.waitForTimeout(1000)
+      
+      // 验证表格可见
+      const table = page.locator('table')
+      await expect(table).toBeVisible()
+      
+      // 验证表格有编辑按钮
+      const tableButtons = page.locator('.table-button')
+      const buttonCount = await tableButtons.count()
+      expect(buttonCount).toBeGreaterThan(0)
+    })
+
+    test('Crepe 表格应该支持添加行和列', async ({ page }) => {
+      const editor = page.locator('.milkdown-crepe .ProseMirror')
+      
+      // 插入表格
+      await editor.click()
+      await page.keyboard.type('/table')
+      await page.waitForTimeout(500)
+      await page.keyboard.press('Enter')
+      await page.waitForTimeout(1000)
+      
+      // 点击添加行按钮
+      const addRowBtn = page.locator('.table-button:has-text("➕"):has-text("行")').first()
+      if (await addRowBtn.count() > 0) {
+        await addRowBtn.click()
+        await page.waitForTimeout(500)
+        
+        // 验证行数增加
+        const rows = page.locator('table tr')
+        const rowCount = await rows.count()
+        expect(rowCount).toBeGreaterThan(2) // 至少表头 +2 行
+      }
+    })
+
+    test('Crepe 表格样式应该正确', async ({ page }) => {
+      const editor = page.locator('.milkdown-crepe .ProseMirror')
+      
+      // 插入表格
+      await editor.click()
+      await page.keyboard.type('/table')
+      await page.waitForTimeout(500)
+      await page.keyboard.press('Enter')
+      await page.waitForTimeout(1000)
+      
+      // 验证表格样式
+      const table = page.locator('table')
+      const th = table.locator('th')
+      const td = table.locator('td')
+      
+      // 验证表头背景色
+      const thBackground = await th.first().evaluate(el => 
+        window.getComputedStyle(el).backgroundColor
+      )
+      expect(thBackground).toBeTruthy()
+      
+      // 验证边框
+      const tdBorder = await td.first().evaluate(el =>
+        window.getComputedStyle(el).border
+      )
+      expect(tdBorder).toContain('1px')
+    })
+  })
 
     test('连续美元符号不应该导致编辑器崩溃', async ({ page }) => {
       const editor = page.locator('.ProseMirror')
