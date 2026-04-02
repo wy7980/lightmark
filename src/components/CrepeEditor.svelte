@@ -185,7 +185,13 @@
 
   :global(.milkdown-crepe th, .milkdown-crepe td) {
     border: 1px solid var(--border-color, #dfe2e5);
-    padding: 8px 12px;
+    padding: 8px 10px;  /* Typora 标准：更紧凑的行高 */
+    line-height: 1.5;   /* 行高 1.5 倍，提升紧凑度 */
+  }
+
+  /* 表头稍微加重以区分 */
+  :global(.milkdown-crepe th) {
+    padding: 10px 12px;  /* 表头稍大一点 */
   }
 
   :global(.milkdown-crepe tr:nth-child(2n)) {
