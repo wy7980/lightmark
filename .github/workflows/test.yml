@@ -139,34 +139,33 @@ jobs:
       - name: Analyze test results
         if: steps.e2e-run.outcome == 'failure'
         run: |
+          echo "::group::E2E Test Failure Analysis"
           echo "❌ E2E tests failed!"
           echo ""
-          echo "=== Test Summary ==="
           if [ -f report.json ]; then
-            python3 -c "
-import json
-with open('report.json') as f:
-    data = json.load(f)
-    stats = data.get('stats', {})
-    print(f\"Total tests: {stats.get('total', 'N/A')}\")
-    print(f\"Passed: {stats.get('expected', 'N/A')}\")
-    print(f\"Failed: {stats.get('unexpected', 'N/A')}\")
-    print('')
-    print('=== Failed Tests ===')
-    for test in data.get('tests', []):
-        if test.get('outcome') == 'unexpected':
-            print(f\"❌ {test.get('title', 'Unknown')}\")
-            for result in test.get('results', []):
-                if result.get('error'):
-                    error = result['error']
-                    print(f\"   Error: {error.get('message', 'Unknown')[:200]}\")
-"
+            echo "Parsing test report..."
+            # 使用 jq 解析 JSON (GitHub Actions 预装)
+            if command -v jq &> /dev/null; then
+              TOTAL=$(jq '.stats.total' report.json)
+              PASSED=$(jq '.stats.expected' report.json)
+              FAILED=$(jq '.stats.unexpected' report.json)
+              echo "Total tests: $TOTAL"
+              echo "Passed: $PASSED"
+              echo "Failed: $FAILED"
+              echo ""
+              echo "=== Failed Tests ==="
+              jq -r '.tests[] | select(.outcome == "unexpected") | "❌ " + .title' report.json
+            else
+              echo "JSON report available at: report.json"
+              echo "Download the artifact to view details."
+            fi
           fi
+          echo "::endgroup::"
           echo ""
-          echo "Check artifacts for detailed reports:"
-          echo "  - playwright-report-json: JSON report"
-          echo "  - playwright-report-html: HTML report with screenshots"
-          echo "  - e2e-test-results: Test results and videos"
+          echo "📎 Artifacts uploaded:"
+          echo "  - playwright-report-json"
+          echo "  - playwright-report-html"
+          echo "  - e2e-test-results"
           exit 1
 
   # ==================== 构建测试 ====================
