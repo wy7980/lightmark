@@ -143,24 +143,24 @@ jobs:
           echo ""
           echo "=== Test Summary ==="
           if [ -f report.json ]; then
-            python3 << 'EOF'
+            python3 -c "
 import json
 with open('report.json') as f:
     data = json.load(f)
     stats = data.get('stats', {})
-    print(f"Total tests: {stats.get('total', 'N/A')}")
-    print(f"Passed: {stats.get('expected', 'N/A')}")
-    print(f"Failed: {stats.get('unexpected', 'N/A')}")
-    print("")
-    print("=== Failed Tests ===")
+    print(f\"Total tests: {stats.get('total', 'N/A')}\")
+    print(f\"Passed: {stats.get('expected', 'N/A')}\")
+    print(f\"Failed: {stats.get('unexpected', 'N/A')}\")
+    print('')
+    print('=== Failed Tests ===')
     for test in data.get('tests', []):
         if test.get('outcome') == 'unexpected':
-            print(f"❌ {test.get('title', 'Unknown')}")
+            print(f\"❌ {test.get('title', 'Unknown')}\")
             for result in test.get('results', []):
                 if result.get('error'):
                     error = result['error']
-                    print(f"   Error: {error.get('message', 'Unknown')[:200]}")
-EOF
+                    print(f\"   Error: {error.get('message', 'Unknown')[:200]}\")
+"
           fi
           echo ""
           echo "Check artifacts for detailed reports:"
