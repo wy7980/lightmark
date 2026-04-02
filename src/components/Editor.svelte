@@ -134,6 +134,7 @@
 <style>
   .milkdown-container {
     height: 100%;
+    min-height: calc(100vh - 150px);  /* 关键：确保最小高度，减去 toolbar 和 status-bar */
     overflow-y: auto;
     background: var(--bg-primary, #fff);
     cursor: text;  /* 提示整个区域可编辑 */
@@ -143,14 +144,14 @@
 
   /* 编辑器主体 */
   :global(.milkdown) {
-    min-height: 100%;  /* 始终充满容器 */
+    min-height: calc(100vh - 230px);  /* 关键：空文档时也有足够高度 */
     padding: 40px 0;
     background: var(--bg-primary, #fff);
   }
 
   :global(.milkdown .ProseMirror) {
     outline: none;
-    min-height: 100%;   /* 空文档时消除点击盲区 */
+    min-height: calc(100vh - 310px);   /* 关键：空文档时消除点击盲区，保证可点击区域 */
     max-width: 800px;
     margin: 0 auto;
     padding: 0 48px 200px; /* 底部大间距保证可点击 */

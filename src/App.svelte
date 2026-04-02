@@ -453,7 +453,9 @@
   .editor-container {
     flex: 1;
     display: flex;
+    flex-direction: column;
     overflow: hidden;
+    min-height: 0;  /* 关键：允许 flex 子项缩小 */
   }
   
   .preview {
