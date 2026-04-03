@@ -103,7 +103,7 @@
           const doc = parser(newContent)
           if (!doc) return
           const { state, dispatch } = view
-          const tr = state.tr.replaceWith(0, state.doc.content.size, doc.content)
+          const tr = state.tr.replaceWith(0, state.doc.content.size, doc)
           dispatch(tr)
         })
       }
@@ -123,11 +123,14 @@
         editor.editor.action((ctx) => {
           const view = ctx.get(editorViewCtx)
           const parser = ctx.get(parserCtx)
-          const doc = parser('\\n\\n' + markdownText.trim() + '\\n\\n')
+          // 使用真实的换行符，并确保前后有空行以触发块级解析
+          const doc = parser('\n\n' + markdownText.trim() + '\n\n')
           if (!doc) return
           const { state, dispatch } = view
-          const pos = state.selection.to
-          const tr = state.tr.insert(pos, doc.content)
+          
+          // 使用 replaceSelection 插入解析后的内容
+          // 这会自动处理块级节点的插入逻辑
+          const tr = state.tr.replaceSelectionWith(doc)
           dispatch(tr)
           view.focus()
         })
