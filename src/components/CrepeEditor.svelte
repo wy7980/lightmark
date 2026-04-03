@@ -201,36 +201,36 @@
   }
 
   /* ===== 表格样式增强 ===== */
-  :global(.milkdown-crepe .table-view) {
+  .crepe-container :global(.table-view) {
     overflow-x: auto;
     margin: 16px 0;
+    border: 1px solid var(--border-color, #ccc) !important;
+    border-radius: 6px;
+    background: var(--bg-primary, #fff);
   }
 
-  :global(.milkdown-crepe table) {
-    border-collapse: collapse;
-    width: 100%;
-    min-width: 600px;
+  .crepe-container :global(table) {
+    border-collapse: collapse !important;
+    width: 100% !important;
+    min-width: 600px !important;
+    border: none !important; /* 让 wrapper 处理外边框 */
   }
 
-  :global(.milkdown-crepe th) {
-    background: var(--bg-secondary, #f6f8fa);
-    font-weight: 600;
-    text-align: left;
+  .crepe-container :global(th) {
+    background: var(--bg-secondary, #f6f8fa) !important;
+    font-weight: 600 !important;
+    text-align: left !important;
   }
 
-  :global(.milkdown-crepe th, .milkdown-crepe td) {
-    border: 1px solid var(--border-color, #dfe2e5);
-    padding: 8px 10px;  /* Typora 标准：更紧凑的行高 */
-    line-height: 1.5;   /* 行高 1.5 倍，提升紧凑度 */
+  .crepe-container :global(th), .crepe-container :global(td) {
+    border: 1px solid var(--border-color, #ccc) !important;
+    padding: 10px 15px !important;
+    line-height: 1.6 !important;
+    color: var(--text-primary, #333);
   }
 
-  /* 表头稍微加重以区分 */
-  :global(.milkdown-crepe th) {
-    padding: 10px 12px;  /* 表头稍大一点 */
-  }
-
-  :global(.milkdown-crepe tr:nth-child(2n)) {
-    background: var(--bg-tertiary, #f8f9fa);
+  .crepe-container :global(tr:nth-child(2n)) {
+    background: var(--bg-tertiary, #f9f9f9) !important;
   }
 
   /* 表格编辑按钮 */

@@ -63,16 +63,18 @@
   :global(.dark-theme) {
     --bg-primary: #1e1e1e;
     --bg-secondary: #252525;
+    --bg-tertiary: #2a2a2a;
     --text-primary: #e0e0e0;
     --text-secondary: #a0a0a0;
-    --border-color: #333;
+    --border-color: #555;
   }
   
   :global(.light-theme) {
     --bg-primary: #ffffff;
     --bg-secondary: #f8f8f8;
+    --bg-tertiary: #f0f0f0;
     --text-primary: #333333;
     --text-secondary: #666666;
-    --border-color: #e0e0e0;
+    --border-color: #ccc;
   }
 </style>
