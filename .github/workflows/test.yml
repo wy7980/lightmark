@@ -108,17 +108,24 @@ jobs:
           exit 1
       
       - name: Run E2E tests (Chromium only)
-        run: npx playwright test --project=chromium --reporter=json --reporter=list
+        run: npx playwright test --project=chromium --reporter=json=playwright-report/report.json --reporter=list --reporter=html=playwright-report
         id: e2e-run
         continue-on-error: true
+      
+      - name: Show test report path
+        run: |
+          echo "=== Test Report Location ==="
+          ls -la playwright-report/ || echo "playwright-report directory not found"
+          ls -la *.json || echo "No JSON files in root"
       
       - name: Upload JSON test report
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report-json
-          path: report.json
+          path: playwright-report/report.json
           retention-days: 7
+          if-no-files-found: warn
       
       - name: Upload HTML test report
         uses: actions/upload-artifact@v4
@@ -127,6 +134,7 @@ jobs:
           name: playwright-report-html
           path: playwright-report/
           retention-days: 7
+          if-no-files-found: warn
       
       - name: Upload test results
         uses: actions/upload-artifact@v4
@@ -135,6 +143,7 @@ jobs:
           name: e2e-test-results
           path: test-results/
           retention-days: 7
+          if-no-files-found: warn
       
       - name: Analyze test results
         if: steps.e2e-run.outcome == 'failure'
@@ -142,23 +151,26 @@ jobs:
           echo "::group::E2E Test Failure Analysis"
           echo "❌ E2E tests failed!"
           echo ""
-          if [ -f report.json ]; then
+          if [ -f playwright-report/report.json ]; then
             echo "Parsing test report..."
             # 使用 jq 解析 JSON (GitHub Actions 预装)
             if command -v jq &> /dev/null; then
-              TOTAL=$(jq '.stats.total' report.json)
-              PASSED=$(jq '.stats.expected' report.json)
-              FAILED=$(jq '.stats.unexpected' report.json)
+              TOTAL=$(jq '.stats.total' playwright-report/report.json)
+              PASSED=$(jq '.stats.expected' playwright-report/report.json)
+              FAILED=$(jq '.stats.unexpected' playwright-report/report.json)
               echo "Total tests: $TOTAL"
               echo "Passed: $PASSED"
               echo "Failed: $FAILED"
               echo ""
               echo "=== Failed Tests ==="
-              jq -r '.tests[] | select(.outcome == "unexpected") | "❌ " + .title' report.json
+              jq -r '.tests[] | select(.outcome == "unexpected") | "❌ " + .title' playwright-report/report.json
             else
-              echo "JSON report available at: report.json"
+              echo "JSON report available at: playwright-report/report.json"
               echo "Download the artifact to view details."
             fi
+          else
+            echo "⚠️ report.json not found, checking test-results directory..."
+            ls -la test-results/ | head -20
           fi
           echo "::endgroup::"
           echo ""
