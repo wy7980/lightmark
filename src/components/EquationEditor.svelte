@@ -24,6 +24,7 @@
   ]
   
   function render() {
+    console.log('[LightMark] EquationEditor 渲染 LaTeX:', latex)
     try {
       previewHtml = katex.renderToString(latex, {
         displayMode: equationType === 'block',
@@ -32,6 +33,7 @@
       })
       error = ''
     } catch (e) {
+      console.error('[LightMark] EquationEditor 渲染失败:', e)
       error = e instanceof Error ? e.message : '渲染失败'
       previewHtml = ''
     }
@@ -74,6 +76,7 @@
   <div class="equation-input-group">
     <textarea 
       bind:value={latex}
+      on:input={render}
       placeholder="输入 LaTeX 公式..."
       class="equation-input"
       rows="3"

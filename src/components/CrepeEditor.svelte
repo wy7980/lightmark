@@ -209,6 +209,76 @@
     background: var(--bg-primary, #fff);
   }
 
+  /* --- Milkdown Crepe Fixes --- */
+
+  /* 1. 强制显示虚拟光标 */
+  :global(.crepe-container .milkdown-cursor) {
+    background-color: var(--text-primary, #333) !important;
+    width: 2px !important;
+    z-index: 10 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    from, to { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* 2. 修复块级编辑按钮 (+) 和 拖拽句柄 */
+  :global(.crepe-container .milkdown-block-handle) {
+    background-color: var(--bg-secondary, #f0f0f0) !important;
+    border: 1px solid var(--border-color, #ccc) !important;
+    border-radius: 4px !important;
+    opacity: 0.8 !important;
+    z-index: 100 !important;
+    cursor: grab !important;
+    transition: opacity 0.2s, background-color 0.2s !important;
+  }
+
+  :global(.crepe-container .milkdown-block-handle:hover) {
+    opacity: 1 !important;
+    background-color: var(--bg-tertiary, #e0e0e0) !important;
+  }
+
+  /* 3. 修复斜杠菜单 (/) 和 块菜单可见性 */
+  :global(.milkdown-menu),
+  :global(.crepe-container [data-popover]),
+  :global(.crepe-container .milkdown-slash-menu) {
+    background-color: var(--bg-primary, #fff) !important;
+    border: 1px solid var(--border-color, #ccc) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+    border-radius: 6px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    z-index: 1000 !important;
+    overflow: hidden !important;
+  }
+
+  /* 菜单项文字颜色 */
+  :global(.crepe-container .milkdown-menu-item),
+  :global(.crepe-container [data-popover] *) {
+    color: var(--text-primary, #333) !important;
+  }
+
+  :global(.crepe-container [data-popover] *:hover) {
+    background-color: var(--bg-secondary, #f0f0f0) !important;
+  }
+
+  /* 深色模式下的菜单适配 */
+  :global(.dark-theme .crepe-container .milkdown-cursor) {
+    background-color: #fff !important;
+  }
+
+  :global(.dark-theme .crepe-container .milkdown-block-handle),
+  :global(.dark-theme .milkdown-menu),
+  :global(.dark-theme [data-popover]) {
+    background-color: var(--bg-secondary, #2d2d2d) !important;
+    border-color: #444 !important;
+    color: #eee !important;
+  }
+
   .crepe-container :global(table) {
     border-collapse: collapse !important;
     width: 100% !important;
