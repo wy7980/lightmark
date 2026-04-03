@@ -146,7 +146,7 @@ jobs:
           if-no-files-found: warn
       
       - name: Analyze test results
-        if: steps.e2e-run.outcome == 'failure'
+        if: always() && steps.e2e-run.outcome != 'success'
         run: |
           echo "::group::E2E Test Failure Analysis"
           echo "❌ E2E tests failed!"
@@ -157,13 +157,13 @@ jobs:
             if command -v jq &> /dev/null; then
               TOTAL=$(jq '.stats.total' playwright-report/report.json)
               PASSED=$(jq '.stats.expected' playwright-report/report.json)
-              FAILED=$(jq '.stats.unexpected' playwright-report/report.json)
+              FAILED=$(jq '.stats.unexpected + .stats.flaky' playwright-report/report.json)
               echo "Total tests: $TOTAL"
               echo "Passed: $PASSED"
-              echo "Failed: $FAILED"
+              echo "Failed/Flaky: $FAILED"
               echo ""
               echo "=== Failed Tests ==="
-              jq -r '.tests[] | select(.outcome == "unexpected") | "❌ " + .title' playwright-report/report.json
+              jq -r '.tests[] | select(.outcome == "unexpected" or .outcome == "flaky") | "❌ " + .title' playwright-report/report.json
             else
               echo "JSON report available at: playwright-report/report.json"
               echo "Download the artifact to view details."
@@ -178,6 +178,8 @@ jobs:
           echo "  - playwright-report-json"
           echo "  - playwright-report-html"
           echo "  - e2e-test-results"
+          echo ""
+          echo "Note: This step always exits with error to fail the workflow when tests fail."
           exit 1
 
   # ==================== 构建测试 ====================
