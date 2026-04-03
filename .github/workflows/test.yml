@@ -108,7 +108,7 @@ jobs:
           exit 1
       
       - name: Run E2E tests (Chromium only)
-        run: npx playwright test --project=chromium --reporter=json=playwright-report/report.json --reporter=list --reporter=html=playwright-report
+        run: npx playwright test --project=chromium --reporter="list" --reporter="json=playwright-report/report.json" --reporter="html=playwright-report"
         id: e2e-run
         continue-on-error: true
       
