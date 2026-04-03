@@ -211,22 +211,41 @@
 
   /* --- Milkdown Crepe Fixes --- */
 
-  /* 1. 强制显示虚拟光标 */
-  :global(.crepe-container .milkdown-cursor) {
-    background-color: var(--text-primary, #333) !important;
-    width: 2px !important;
+  /* 1. 强制显示虚拟光标 (Crepe 使用 prosemirror-virtual-cursor) */
+  :global(.crepe-container .prosemirror-virtual-cursor) {
+    border-left-color: var(--prosemirror-virtual-cursor-color, var(--text-primary)) !important;
+    border-left-width: 2px !important;
     z-index: 10 !important;
     opacity: 1 !important;
     visibility: visible !important;
-    animation: blink 1s step-end infinite;
   }
 
-  @keyframes blink {
-    from, to { opacity: 1; }
-    50% { opacity: 0; }
+  /* 虚拟光标颜色变量 */
+  :global(.crepe-container .ProseMirror-focused) {
+    --prosemirror-virtual-cursor-color: var(--text-primary, #333) !important;
   }
 
-  /* 2. 修复块级编辑按钮 (+) 和 拖拽句柄 */
+  /* 2. 恢复原生光标 (用于公式编辑器及 popover 等) */
+  :global(.crepe-container .ProseMirror:not(.virtual-cursor-enabled)),
+  :global([data-popover] .ProseMirror) {
+    caret-color: var(--text-primary, #333) !important;
+    padding: 8px 12px !important;
+    min-width: 150px !important;
+    min-height: 24px !important;
+    overflow: visible !important;
+    -webkit-user-select: text !important;
+    border-radius: 4px !important;
+    display: inline-block !important; /* 确保盒子模型完整 */
+  }
+
+  :global([data-popover] .ProseMirror-focused),
+  :global([data-popover] .ProseMirror:focus) {
+    outline: 2px solid #1976d2 !important;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2) !important;
+    background-color: rgba(25, 118, 210, 0.05) !important;
+  }
+
+  /* 3. 修复块级编辑按钮 (+) 和 拖拽句柄 */
   :global(.crepe-container .milkdown-block-handle) {
     background-color: var(--bg-secondary, #f0f0f0) !important;
     border: 1px solid var(--border-color, #ccc) !important;
@@ -242,7 +261,7 @@
     background-color: var(--bg-tertiary, #e0e0e0) !important;
   }
 
-  /* 3. 修复斜杠菜单 (/) 和 块菜单可见性 */
+  /* 4. 修复斜杠菜单 (/) 和 弹出层可见性 */
   :global(.milkdown-menu),
   :global(.crepe-container [data-popover]),
   :global(.crepe-container .milkdown-slash-menu) {
@@ -266,9 +285,26 @@
     background-color: var(--bg-secondary, #f0f0f0) !important;
   }
 
-  /* 深色模式下的菜单适配 */
-  :global(.dark-theme .crepe-container .milkdown-cursor) {
-    background-color: #fff !important;
+  /* 5. 深色模式适配 */
+  :global(.dark-theme .crepe-container .ProseMirror-focused) {
+    --prosemirror-virtual-cursor-color: #fff !important;
+  }
+
+  :global(.dark-theme .crepe-container .ProseMirror:not(.virtual-cursor-enabled)),
+  :global(.dark-theme [data-popover] .ProseMirror) {
+    caret-color: #fff !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  :global(.dark-theme [data-popover] .ProseMirror-focused),
+  :global(.dark-theme [data-popover] .ProseMirror:focus) {
+    outline: 2px solid #90caf9 !important;
+    box-shadow: 0 0 0 3px rgba(144, 202, 249, 0.3) !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  :global(.crepe-container .ProseMirror-hideselection) {
+    caret-color: transparent !important;
   }
 
   :global(.dark-theme .crepe-container .milkdown-block-handle),
@@ -277,6 +313,19 @@
     background-color: var(--bg-secondary, #2d2d2d) !important;
     border-color: #444 !important;
     color: #eee !important;
+  }
+
+  :global(.crepe-container .ProseMirror-hideselection) {
+    caret-color: transparent !important;
+  }
+
+  :global([data-popover] .ProseMirror) {
+    caret-color: var(--text-primary, #333) !important;
+    -webkit-user-select: text !important;
+  }
+
+  :global(.dark-theme [data-popover] .ProseMirror) {
+    caret-color: #fff !important;
   }
 
   .crepe-container :global(table) {
