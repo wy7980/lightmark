@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy, createEventDispatcher } from 'svelte'
   import { Crepe } from '@milkdown/crepe'
+  import { editorViewCtx, parserCtx } from '@milkdown/core'
   import '@milkdown/crepe/theme/common/style.css'
   
   export let content = ''
@@ -40,15 +41,16 @@
         placeholder: '开始写作...',
       })
 
-      // 创建编辑器后再监听内容变化
-      await editor.create()
-      
-      // 监听内容变化（必须在 create 之后）
-      editor.listener.onMarkdownUpdated((ctx, markdown) => {
-        if (isInitialized) {
-          dispatch('change', markdown)
-        }
+      editor.on((listener) => {
+        listener.markdownUpdated((_, markdown) => {
+          if (isInitialized) {
+            dispatch('change', markdown)
+          }
+        })
       })
+
+      // 创建编辑器
+      await editor.create()
       
       isInitialized = true
       console.log('[LightMark] Crepe 编辑器初始化完成')
@@ -89,8 +91,24 @@
 
   // 更新内容
   export function updateContent(newContent: string) {
-    if (editor && isInitialized) {
-      editor.setMarkdown(newContent)
+    if (!editor || !isInitialized) return
+    
+    try {
+      if (typeof (editor as any).setMarkdown === 'function') {
+        (editor as any).setMarkdown(newContent)
+      } else {
+        editor.editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx)
+          const parser = ctx.get(parserCtx)
+          const doc = parser(newContent)
+          if (!doc) return
+          const { state, dispatch } = view
+          const tr = state.tr.replaceWith(0, state.doc.content.size, doc.content)
+          dispatch(tr)
+        })
+      }
+    } catch (error) {
+      console.error('[LightMark] updateContent 失败:', error)
     }
   }
 
@@ -99,7 +117,21 @@
     if (!editor || !isInitialized) return
     
     try {
-      editor.insertMarkdown(markdownText)
+      if (typeof (editor as any).insertMarkdown === 'function') {
+        (editor as any).insertMarkdown(markdownText)
+      } else {
+        editor.editor.action((ctx) => {
+          const view = ctx.get(editorViewCtx)
+          const parser = ctx.get(parserCtx)
+          const doc = parser('\\n\\n' + markdownText.trim() + '\\n\\n')
+          if (!doc) return
+          const { state, dispatch } = view
+          const pos = state.selection.to
+          const tr = state.tr.insert(pos, doc.content)
+          dispatch(tr)
+          view.focus()
+        })
+      }
       console.log('[LightMark] 插入 Markdown:', markdownText)
     } catch (error) {
       console.error('[LightMark] 插入 Markdown 失败:', error)
