@@ -25,10 +25,6 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
-    // 浏览器启动超时
-    launchOptions: {
-      timeout: 30000
-    }
   },
   
   // 项目配置 - 只保留 Chromium 以加速 CI
@@ -37,7 +33,6 @@ export default defineConfig({
       name: 'chromium',
       use: { 
         ...devices['Desktop Chrome'],
-        // 禁用不必要的功能加速测试
         viewport: { width: 1920, height: 1080 },
       },
     },
@@ -54,10 +49,10 @@ export default defineConfig({
   
   // Web 服务器配置（仅在本地开发时启用）
   // CI 环境中由 GitHub Actions workflow 手动启动服务器
-  webServer: process.env.CI ? undefined : {
+  webServer: {
     command: 'npm run build:frontend && npx vite preview --port 5173',
     url: 'http://localhost:5173',
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
     timeout: 120 * 1000,
   },
 })

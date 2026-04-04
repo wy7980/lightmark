@@ -90,23 +90,6 @@ jobs:
       - name: Build frontend
         run: npm run build:frontend
       
-      - name: Start preview server
-        run: npx vite preview --port 5173 --host &
-      
-      - name: Wait for server
-        run: |
-          echo "Waiting for preview server to start..."
-          for i in {1..60}; do
-            if curl -s http://localhost:5173 > /dev/null; then
-              echo "✅ Server is ready after ${i} seconds!"
-              exit 0
-            fi
-            echo "Waiting... (${i}/60)"
-            sleep 1
-          done
-          echo "❌ Server failed to start after 60 seconds"
-          exit 1
-      
       - name: Run E2E tests (Chromium only)
         run: npx playwright test --project=chromium --reporter="list" --reporter="json=playwright-report/report.json" --reporter="html=playwright-report"
         id: e2e-run
